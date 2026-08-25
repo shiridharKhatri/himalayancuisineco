@@ -11,8 +11,8 @@ export const VideoHero: React.FC = () => {
   const textRefs = React.useRef<(HTMLDivElement | null)[]>([]);
 
   const totalFrames = 240;
-  const startFrame = 10; // Start at frame 10 (~0.4s) to bypass initial autofocus blur
-  const endFrame = 236;  // End at frame 236 (~9.8s) before any final frame transition
+  const startFrame = 0;   // Start at the very first frame
+  const endFrame = 239;  // End at the very last frame (240th frame)
 
   React.useEffect(() => {
     // Register ScrollTrigger plugin
