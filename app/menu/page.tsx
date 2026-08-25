@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { MenuItemCard } from "@/components/menu/MenuItemCard";
 import { CustomizationModal } from "@/components/ordering/CustomizationModal";
 import { Badge } from "@/components/ui/Badge";
+import { CuisineLoader } from "@/components/ui/CuisineLoader";
 
 function MenuContent() {
   const searchParams = useSearchParams();
@@ -441,7 +442,18 @@ function MenuContent() {
 
 export default function MenuPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-cream-base text-muted-gray font-sans">Loading Menu...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#FCFBF8]">
+          <CuisineLoader
+            variant="steamer"
+            size="md"
+            message="Curating Himalayan delicacies..."
+            submessage="Loading authentic recipes"
+          />
+        </div>
+      }
+    >
       <MenuContent />
     </Suspense>
   );

@@ -15,8 +15,12 @@ interface CanvasSequenceProps {
 export const CanvasSequence = React.forwardRef<CanvasSequenceRef, CanvasSequenceProps>(
   ({ totalFrames, onProgress, onComplete }, ref) => {
     const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
-    const imagesRef = React.useRef<HTMLImageElement[]>([]);
-    const lastFrameIndex = React.useRef<number>(0);
+    const imagesRef = React.useRef<(HTMLImageElement | null)[]>(new Array(totalFrames).fill(null));
+    const loadedMapRef = React.useRef<boolean[]>(new Array(totalFrames).fill(false));
+    const lastDrawnFrameRef = React.useRef<number>(-1);
+    const rafIdRef = React.useRef<number | null>(null);
+    const targetFrameRef = React.useRef<number>(0);
+
     const onProgressRef = React.useRef(onProgress);
     const onCompleteRef = React.useRef(onComplete);
 
@@ -25,121 +29,173 @@ export const CanvasSequence = React.forwardRef<CanvasSequenceRef, CanvasSequence
       onCompleteRef.current = onComplete;
     });
 
-    const [isLoaded, setIsLoaded] = React.useState(false);
+    // Find the closest loaded frame to avoid canvas freezes
+    const findBestFrame = (targetIndex: number): HTMLImageElement | null => {
+      const images = imagesRef.current;
+      const loaded = loadedMapRef.current;
+      const total = totalFrames;
 
-    // Preload image sequence
-    React.useEffect(() => {
-      let loadedCount = 0;
-      const images: HTMLImageElement[] = [];
-
-      const checkCompletion = () => {
-        loadedCount++;
-        if (onProgressRef.current) {
-          onProgressRef.current(loadedCount / totalFrames);
-        }
-        if (loadedCount === totalFrames) {
-          setIsLoaded(true);
-          if (onCompleteRef.current) {
-            onCompleteRef.current();
-          }
-        }
-      };
-
-      for (let i = 1; i <= totalFrames; i++) {
-        const img = new Image();
-        const formattedNum = String(i).padStart(3, "0");
-        img.src = `/frames/frame_${formattedNum}.webp`;
-        img.onload = checkCompletion;
-        img.onerror = checkCompletion; // Count failed loads to prevent blocking forever
-        images.push(img);
+      if (loaded[targetIndex] && images[targetIndex]) {
+        return images[targetIndex];
       }
 
-      imagesRef.current = images;
-    }, [totalFrames]);
+      // Search outwards for nearest loaded frame
+      for (let offset = 1; offset < total; offset++) {
+        const left = targetIndex - offset;
+        const right = targetIndex + offset;
+
+        if (left >= 0 && loaded[left] && images[left]) {
+          return images[left];
+        }
+        if (right < total && loaded[right] && images[right]) {
+          return images[right];
+        }
+      }
+
+      return null;
+    };
 
     // Draw frame onto the canvas (covers viewport and handles DPR)
     const draw = (index: number, force = false) => {
-      const canvas = canvasRef.current;
-      if (!canvas || imagesRef.current.length === 0) return;
+      targetFrameRef.current = Math.max(0, Math.min(index, totalFrames - 1));
 
-      // Skip redraw if frame index has not changed (unless forced on resize)
-      if (!force && index === lastFrameIndex.current && canvas.width > 0 && canvas.height > 0) return;
+      if (rafIdRef.current !== null && !force) return;
 
-      const img = imagesRef.current[index];
-      if (!img || img.naturalWidth === 0) return;
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-
-      const canvasWidth = canvas.width;
-      const canvasHeight = canvas.height;
-      const imgWidth = img.naturalWidth;
-      const imgHeight = img.naturalHeight;
-
-      const canvasRatio = canvasWidth / canvasHeight;
-      const imgRatio = imgWidth / imgHeight;
-
-      let drawWidth, drawHeight, offsetX, offsetY;
-
-      // Object-fit cover algorithm
-      if (canvasRatio > imgRatio) {
-        // Canvas is wider than image
-        drawWidth = canvasWidth;
-        drawHeight = canvasWidth / imgRatio;
-        offsetX = 0;
-        offsetY = canvasHeight - drawHeight;
-      } else {
-        // Canvas is taller than image
-        drawWidth = canvasHeight * imgRatio;
-        drawHeight = canvasHeight;
-        offsetX = (canvasWidth - drawWidth) / 2;
-        offsetY = 0;
+      if (force && rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
       }
 
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-      ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-      lastFrameIndex.current = index;
+      const performDraw = () => {
+        rafIdRef.current = null;
+        const currentTarget = targetFrameRef.current;
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        // Ensure canvas has physical dimensions
+        if (canvas.width === 0 || canvas.height === 0) {
+          const rect = canvas.getBoundingClientRect();
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.round((rect.width || window.innerWidth) * dpr);
+          canvas.height = Math.round((rect.height || window.innerHeight) * dpr);
+        }
+
+        if (!force && currentTarget === lastDrawnFrameRef.current) return;
+
+        const img = findBestFrame(currentTarget);
+        if (!img || img.naturalWidth === 0) return;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const imgWidth = img.naturalWidth;
+        const imgHeight = img.naturalHeight;
+
+        const canvasRatio = canvasWidth / canvasHeight;
+        const imgRatio = imgWidth / imgHeight;
+
+        let drawWidth, drawHeight, offsetX, offsetY;
+
+        // Object-fit cover algorithm
+        if (canvasRatio > imgRatio) {
+          drawWidth = canvasWidth;
+          drawHeight = canvasWidth / imgRatio;
+          offsetX = 0;
+          offsetY = (canvasHeight - drawHeight) / 2;
+        } else {
+          drawWidth = canvasHeight * imgRatio;
+          drawHeight = canvasHeight;
+          offsetX = (canvasWidth - drawWidth) / 2;
+          offsetY = 0;
+        }
+
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+        lastDrawnFrameRef.current = currentTarget;
+      };
+
+      if (force) {
+        performDraw();
+      } else {
+        rafIdRef.current = requestAnimationFrame(performDraw);
+      }
     };
 
     // Resize canvas to match container's physical pixel size
-    const resizeCanvas = () => {
+    const resizeCanvas = React.useCallback(() => {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+      canvas.width = Math.round((rect.width || window.innerWidth) * dpr);
+      canvas.height = Math.round((rect.height || window.innerHeight) * dpr);
 
-      // Redraw frame immediately to avoid blank screen on resize (force redraw)
-      if (imagesRef.current.length > 0) {
-        draw(lastFrameIndex.current, true);
-      }
-    };
+      draw(lastDrawnFrameRef.current >= 0 ? lastDrawnFrameRef.current : 0, true);
+    }, []);
 
-    // Handle resizing
+    // Preload image frames
     React.useEffect(() => {
-      if (!isLoaded) return;
+      let isCancelled = false;
+      let loadedCount = 0;
 
-      window.addEventListener("resize", resizeCanvas);
-      // Run once layout stabilizes
+      // Handle window resize
+      window.addEventListener("resize", resizeCanvas, { passive: true });
       resizeCanvas();
 
-      return () => {
-        window.removeEventListener("resize", resizeCanvas);
-      };
-    }, [isLoaded]);
-
-    // Initial draw when load completes
-    React.useEffect(() => {
-      if (isLoaded) {
+      // Load Frame 1 immediately with high priority
+      const firstImg = new Image();
+      firstImg.src = "/frames/frame_001.webp";
+      firstImg.onload = () => {
+        if (isCancelled) return;
+        imagesRef.current[0] = firstImg;
+        loadedMapRef.current[0] = true;
+        loadedCount++;
         resizeCanvas();
+        draw(0, true);
+      };
+
+      // Load all remaining frames asynchronously
+      for (let i = 2; i <= totalFrames; i++) {
+        const img = new Image();
+        const formattedNum = String(i).padStart(3, "0");
+        img.src = `/frames/frame_${formattedNum}.webp`;
+        const idx = i - 1;
+
+        img.onload = () => {
+          if (isCancelled) return;
+          imagesRef.current[idx] = img;
+          loadedMapRef.current[idx] = true;
+          loadedCount++;
+
+          if (onProgressRef.current) {
+            onProgressRef.current(loadedCount / totalFrames);
+          }
+
+          if (loadedCount === totalFrames && onCompleteRef.current) {
+            onCompleteRef.current();
+          }
+        };
+
+        img.onerror = () => {
+          if (isCancelled) return;
+          loadedCount++;
+          if (onProgressRef.current) {
+            onProgressRef.current(loadedCount / totalFrames);
+          }
+        };
       }
-    }, [isLoaded]);
+
+      return () => {
+        isCancelled = true;
+        window.removeEventListener("resize", resizeCanvas);
+        if (rafIdRef.current !== null) {
+          cancelAnimationFrame(rafIdRef.current);
+        }
+      };
+    }, [totalFrames, resizeCanvas]);
 
     React.useImperativeHandle(ref, () => ({
       drawFrame: (index: number) => {
@@ -151,13 +207,12 @@ export const CanvasSequence = React.forwardRef<CanvasSequenceRef, CanvasSequence
       <canvas
         ref={canvasRef}
         className="w-full h-full block"
-        style={{ 
-          width: "100%", 
+        style={{
+          width: "100%",
           height: "100%",
           willChange: "transform",
           transform: "translate3d(0, 0, 0)",
           backfaceVisibility: "hidden",
-          imageRendering: "-webkit-optimize-contrast" as any
         }}
       />
     );

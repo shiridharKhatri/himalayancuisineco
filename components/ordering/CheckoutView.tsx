@@ -20,6 +20,7 @@ import { useCartStore } from "@/stores/cartStore";
 import { useOrderStore } from "@/stores/orderStore";
 import { useUIStore } from "@/stores/uiStore";
 import { Dialog } from "@/components/ui/Dialog";
+import { CuisineLoader } from "@/components/ui/CuisineLoader";
 
 export function CheckoutView({ checkoutId }: { checkoutId?: string }) {
   const router = useRouter();
@@ -723,10 +724,9 @@ export function CheckoutView({ checkoutId }: { checkoutId?: string }) {
             </div>
 
             {/* RIGHT COLUMN: Order Summary Sticky Card */}
-            <div className="lg:col-span-5 text-left">
-              <div className="sticky top-24 space-y-6">
-                <div>
-                  <h2 className="font-serif text-2xl font-normal text-charcoal mb-4">
+            <div className="lg:col-span-5 text-left self-start lg:sticky lg:top-8 space-y-6">
+              <div>
+                <h2 className="font-serif text-2xl font-normal text-charcoal mb-4">
                     Order summary
                   </h2>
 
@@ -904,10 +904,9 @@ export function CheckoutView({ checkoutId }: { checkoutId?: string }) {
                   ))}
                 </div>
               </div>
-            </div>
-          </form>
-        </div>
-      </main>
+            </form>
+          </div>
+        </main>
 
       {/* Custom Tip Modal Dialog */}
       <Dialog
@@ -977,6 +976,16 @@ export function CheckoutView({ checkoutId }: { checkoutId?: string }) {
           </button>
         </div>
       </Dialog>
+
+      {/* Submission Loading Overlay */}
+      {isSubmitting && (
+        <CuisineLoader
+          variant="momo"
+          size="fullscreen"
+          message="Sending order to the kitchen..."
+          submessage="Our chefs are preparing your authentic Himalayan feast"
+        />
+      )}
     </div>
   );
 }
