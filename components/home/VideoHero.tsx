@@ -20,6 +20,7 @@ export const VideoHero: React.FC = () => {
     video.removeAttribute("controls");
     video.muted = true;
     video.playsInline = true;
+    video.pause();
 
     // Standard video duration is 10 seconds. Initialize timeline instantly
     const duration = 10;
@@ -101,10 +102,15 @@ export const VideoHero: React.FC = () => {
 
     let renderId: number;
     const updatePlayhead = () => {
-      if (video && !video.seeking) {
-        const diff = Math.abs(video.currentTime - videoProxy.currentTime);
-        if (diff > 0.03) {
-          video.currentTime = videoProxy.currentTime;
+      if (video) {
+        if (!video.paused) {
+          video.pause();
+        }
+        if (!video.seeking) {
+          const diff = Math.abs(video.currentTime - videoProxy.currentTime);
+          if (diff > 0.03) {
+            video.currentTime = videoProxy.currentTime;
+          }
         }
       }
       renderId = requestAnimationFrame(updatePlayhead);
