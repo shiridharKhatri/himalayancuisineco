@@ -49,59 +49,50 @@ export const VideoHero: React.FC = () => {
         0
       );
 
-      // 2. Synchronize floating text fades relative to the video duration
+      // 2. Synchronize floating text fades to only show when the dish bowl has settled in frame (2s intervals)
+      // Transition periods (1s - 2s, 3s - 4s, 5s - 6s, 7s - 8s) are kept clean and free of text overlays.
       const timings = [
-        { start: 0, end: 1 },
-        { start: 1, end: 3 },
-        { start: 3, end: 5 },
-        { start: 5, end: 7 },
-        { start: 7, end: 9 },
+        { enterStart: 0.0, enterEnd: 0.0, exitStart: 0.7, exitEnd: 1.0 }, // Jhol Momo (stationary 0s - 1s)
+        { enterStart: 1.7, enterEnd: 2.0, exitStart: 2.7, exitEnd: 3.0 }, // Fried Momo (stationary 2s - 3s)
+        { enterStart: 3.7, enterEnd: 4.0, exitStart: 4.7, exitEnd: 5.0 }, // Tandoori Chicken (stationary 4s - 5s)
+        { enterStart: 5.7, enterEnd: 6.0, exitStart: 6.7, exitEnd: 7.0 }, // Biryani (stationary 6s - 7s)
+        { enterStart: 7.7, enterEnd: 8.0, exitStart: 9.1, exitEnd: 9.5 }, // Rogan Josh (stationary 8s - 9.5s)
       ];
 
       textRefs.current.forEach((textEl, index) => {
         if (!textEl) return;
-        const { start, end } = timings[index];
+        const { enterStart, enterEnd, exitStart, exitEnd } = timings[index];
 
         if (index === 0) {
           // First overlay is visible initially
           gsap.set(textEl, { opacity: 1, y: 0, scale: 1 });
           
-          // Fades out at index 0 range end
+          // Fades out before the transition starts
           tl.to(textEl, {
             opacity: 0,
             y: -30,
             scale: 0.95,
-            duration: 0.3,
-          }, start + 0.7);
+            duration: exitEnd - exitStart,
+          }, exitStart);
         } else {
           // Successive overlays start hidden below the focal point
           gsap.set(textEl, { opacity: 0, y: 30, scale: 1.05 });
 
-          // Fade and translate into view
+          // Fade and translate into view when the bowl settles in frame
           tl.to(textEl, {
             opacity: 1,
             y: 0,
             scale: 1,
-            duration: 0.4,
-          }, start - 0.2);
+            duration: enterEnd - enterStart,
+          }, enterStart);
 
-          // Fade and translate out of view
-          if (index < textRefs.current.length - 1) {
-            tl.to(textEl, {
-              opacity: 0,
-              y: -30,
-              scale: 0.95,
-              duration: 0.4,
-            }, end - 0.2);
-          } else {
-            // Final slide fades out at the very end of scroll trigger
-            tl.to(textEl, {
-              opacity: 0,
-              y: -30,
-              scale: 0.95,
-              duration: 0.4,
-            }, end);
-          }
+          // Fade and translate out of view before the next transition starts
+          tl.to(textEl, {
+            opacity: 0,
+            y: -30,
+            scale: 0.95,
+            duration: exitEnd - exitStart,
+          }, exitStart);
         }
       });
     }, containerRef);
@@ -115,12 +106,12 @@ export const VideoHero: React.FC = () => {
     {
       title: "Authentic Himalayan Flavors",
       description: "Handcrafted dumplings served piping hot with signature chili chutney.",
-      positionClass: "top-20 md:top-28 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-3xl",
+      positionClass: "top-32 md:top-44 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-3xl",
     },
     {
       title: "Golden, Crispy Perfection",
       description: "Paired with bold, spicy dipping sauce for the ultimate crunch.",
-      positionClass: "top-20 md:top-28 left-6 md:left-24 text-left items-start w-full max-w-xl",
+      positionClass: "top-32 md:top-44 left-6 md:left-24 text-left items-start w-full max-w-xl",
     },
     {
       title: "Flame-Grilled Excellence",
@@ -130,12 +121,12 @@ export const VideoHero: React.FC = () => {
     {
       title: "Aromatic & Rich",
       description: "Long-grain basmati cooked with authentic herbs and fried onions.",
-      positionClass: "top-20 md:top-28 right-6 md:right-24 text-right items-end w-full max-w-xl",
+      positionClass: "top-32 md:top-44 right-6 md:right-24 text-right items-end w-full max-w-xl",
     },
     {
       title: "Slow-Cooked Goodness",
       description: "Tender meat infused with deep, savory spice blends.",
-      positionClass: "top-20 md:top-28 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-3xl",
+      positionClass: "top-32 md:top-44 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-3xl",
     },
   ];
 
