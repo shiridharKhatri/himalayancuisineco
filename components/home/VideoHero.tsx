@@ -24,6 +24,9 @@ export const VideoHero: React.FC = () => {
     const initTimeline = () => {
       const duration = video.duration || 10;
 
+      // Use a proxy object for setting video currentTime to enable GSAP to apply its smooth scrub inertia directly
+      const videoProxy = { currentTime: 0 };
+
       // GSAP context helps with clean state reversion on component unmount
       const ctx = gsap.context(() => {
         const tl = gsap.timeline({
@@ -31,14 +34,19 @@ export const VideoHero: React.FC = () => {
             trigger: containerRef.current,
             start: "top top",
             end: "bottom bottom",
-            scrub: 1.2, // Adds a subtle delay for fluid, high-frame-rate interpolation
+            scrub: 1.5, // Smooth lag/momentum buffer
           },
         });
 
-        // 1. Scrub video playhead position linearly across scrollable distance
-        tl.to(video, {
+        // 1. Scrub proxy playhead position linearly across scrollable distance
+        tl.to(videoProxy, {
           currentTime: duration,
           ease: "none",
+          onUpdate: () => {
+            if (video) {
+              video.currentTime = videoProxy.currentTime;
+            }
+          }
         }, 0);
 
         // 2. Synchronize floating text fades relative to the video duration
@@ -146,7 +154,7 @@ export const VideoHero: React.FC = () => {
   ];
 
   return (
-    <div ref={containerRef} className="relative w-full h-[500vh] bg-charcoal">
+    <div ref={containerRef} className="relative w-full h-[1200vh] bg-charcoal">
       <div className="sticky top-0 left-0 w-full h-screen overflow-hidden bg-black select-none">
         
         {/* Covering Background Video */}
