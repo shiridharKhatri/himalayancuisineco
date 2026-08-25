@@ -140,7 +140,7 @@ export const VideoHero: React.FC = () => {
   ];
 
   return (
-    <div ref={containerRef} className="relative w-full h-[1200vh] bg-charcoal">
+    <div ref={containerRef} className="relative w-full h-[900vh] bg-charcoal">
       <div className="sticky top-0 left-0 w-full h-screen overflow-hidden bg-black select-none">
         
         {/* Covering Canvas Sequence */}

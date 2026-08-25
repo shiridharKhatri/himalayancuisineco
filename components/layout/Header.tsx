@@ -26,8 +26,8 @@ export const Header: React.FC = () => {
 
   React.useEffect(() => {
     const handleScroll = () => {
-      // Transition navbar to white solid background when scrolling past the 1200vh video hero section
-      const threshold = window.innerHeight * 11;
+      // Transition navbar to white solid background when scrolling past the 900vh video hero section
+      const threshold = window.innerHeight * 8;
       setIsScrolled(window.scrollY > threshold);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });

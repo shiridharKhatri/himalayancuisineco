@@ -82,7 +82,7 @@ export const CanvasSequence = React.forwardRef<CanvasSequenceRef, CanvasSequence
         drawWidth = canvasWidth;
         drawHeight = canvasWidth / imgRatio;
         offsetX = 0;
-        offsetY = (canvasHeight - drawHeight) / 2;
+        offsetY = canvasHeight - drawHeight;
       } else {
         // Canvas is taller than image
         drawWidth = canvasHeight * imgRatio;
