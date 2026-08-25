@@ -7,14 +7,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle, AlertTriangle, AlertCircle, Info } from "lucide-react";
 
 import { SmoothScroll } from "./SmoothScroll";
+import { CartDrawer } from "@/components/ordering/CartDrawer";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <SmoothScroll>
         {children}
+        <ToastContainer />
+        <CartDrawer />
       </SmoothScroll>
-      <ToastContainer />
     </SessionProvider>
   );
 }

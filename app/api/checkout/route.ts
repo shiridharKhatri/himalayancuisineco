@@ -74,11 +74,19 @@ export async function POST(req: Request) {
     const calculatedDeliveryFee = deliveryType === "DELIVERY" ? 5.0 : 0.0;
     const calculatedTotal = taxableAmount + calculatedTax + calculatedDeliveryFee + tip;
 
+    // Find user by email to associate with order and award points
+    const user = await prisma.user.findUnique({
+      where: { email: customerDetails.email },
+    });
+
+    const userId = user ? user.id : null;
+
     // Create Order in database
     const newOrder = await prisma.order.create({
       data: {
         status: "NEW",
         type: deliveryType,
+        userId,
         customerName: customerDetails.name,
         customerEmail: customerDetails.email,
         customerPhone: customerDetails.phone,
@@ -106,10 +114,48 @@ export async function POST(req: Request) {
       }
     });
 
+    // Credit points to customer's RewardAccount since payment is PAID
+    let earnedPoints = 0;
+    if (user) {
+      earnedPoints = Math.round(taxableAmount * 10);
+      
+      let rewardAccount = await prisma.rewardAccount.findUnique({
+        where: { userId: user.id },
+      });
+
+      if (!rewardAccount) {
+        rewardAccount = await prisma.rewardAccount.create({
+          data: {
+            userId: user.id,
+            points: 0,
+          },
+        });
+      }
+
+      await prisma.rewardAccount.update({
+        where: { userId: user.id },
+        data: {
+          points: {
+            increment: earnedPoints,
+          },
+        },
+      });
+
+      await prisma.rewardTransaction.create({
+        data: {
+          accountId: rewardAccount.id,
+          points: earnedPoints,
+          description: `Earned points on Order #${newOrder.id.slice(-8).toUpperCase()}`,
+          orderId: newOrder.id,
+        },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       orderId: newOrder.id,
       total: calculatedTotal,
+      earnedPoints,
     });
 
   } catch (error) {

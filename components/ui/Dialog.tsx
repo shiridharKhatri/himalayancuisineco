@@ -1,40 +1,44 @@
 "use client";
-
+ 
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-
+import { useLenis } from "@studio-freight/react-lenis";
+ 
 export interface DialogProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
 }
-
+ 
 export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, title, children }) => {
   const [mounted, setMounted] = React.useState(false);
-
+  const lenis = useLenis();
+ 
   React.useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
   }, []);
-
+ 
   React.useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
-
+ 
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      if (lenis) lenis.stop();
       window.addEventListener("keydown", handleEscape);
     }
-
+ 
     return () => {
       document.body.style.overflow = "unset";
+      if (lenis) lenis.start();
       window.removeEventListener("keydown", handleEscape);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, lenis]);
 
   if (!mounted) return null;
 
@@ -61,7 +65,7 @@ export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, title, children
             role="dialog"
             aria-modal="true"
             aria-labelledby={title ? "dialog-title" : undefined}
-            className="relative z-10 w-full max-w-lg overflow-hidden rounded-[14px] bg-cream-light border border-neutral-warm shadow-[0_8px_30px_rgba(21,21,21,0.06)]"
+            className="relative z-10 w-full max-w-lg overflow-hidden rounded-[24px] bg-cream-light border border-neutral-warm shadow-[0_8px_30px_rgba(21,21,21,0.06)]"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-neutral-warm/40 px-6 py-4">

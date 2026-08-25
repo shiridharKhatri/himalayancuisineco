@@ -101,7 +101,9 @@ export default function GiftCardsPage() {
     return Object.keys(errs).length === 0;
   };
 
-  const handlePurchase = (e: React.FormEvent) => {
+  const [purchasedCode, setPurchasedCode] = React.useState("");
+
+  const handlePurchase = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
       addToast("Please fill in all required fields.", "error");
@@ -109,14 +111,39 @@ export default function GiftCardsPage() {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+
+    try {
+      const response = await fetch("/api/gift-cards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipientName: recipient.trim(),
+          recipientEmail: recipientEmail.trim(),
+          senderName: sender.trim(),
+          message: message.trim(),
+          cardStyle: style,
+          amount: amount,
+          deliveryDate: deliveryDate,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to purchase gift card");
+      }
+
+      const data = await response.json();
+      setPurchasedCode(data.giftCard.code);
       setIsPurchased(true);
       addToast("Gift card purchased successfully!", "success");
-    }, 1500);
+    } catch (err: any) {
+      console.error(err);
+      addToast("Error purchasing gift card. Please try again.", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleCheckBalance = (e: React.FormEvent) => {
+  const handleCheckBalance = async (e: React.FormEvent) => {
     e.preventDefault();
     setBalanceError("");
     setCheckedBalance(null);
@@ -126,17 +153,23 @@ export default function GiftCardsPage() {
       return;
     }
 
-    // Mock Checker: Code starting with "HIM-" returns a mock balance
-    setTimeout(() => {
-      const code = balanceCode.trim().toUpperCase();
-      if (code.startsWith("HIM-") && code.length >= 8) {
-        // extract digits or default
-        setCheckedBalance(75.00);
-        addToast("Gift card balance retrieved.", "success");
-      } else {
-        setBalanceError("Gift card code not found or inactive. Try 'HIM-100234'");
+    try {
+      const response = await fetch(`/api/gift-cards?code=${encodeURIComponent(balanceCode.trim())}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          setBalanceError("Gift card code not found or inactive.");
+          return;
+        }
+        throw new Error("Failed to check balance");
       }
-    }, 800);
+
+      const data = await response.json();
+      setCheckedBalance(data.balance);
+      addToast("Gift card balance retrieved.", "success");
+    } catch (err: any) {
+      console.error(err);
+      setBalanceError("Error verifying balance. Please try again.");
+    }
   };
 
   const handleResetPurchase = () => {
@@ -318,11 +351,16 @@ export default function GiftCardsPage() {
                       )}
                     </div>
 
+                    {/* Points Earned Banner */}
+                    <div className="bg-brand-red-soft/30 border border-brand-red/10 rounded-xl py-3 px-4 text-center font-sans text-xs text-brand-red-dark font-medium mt-4">
+                      You&apos;ll earn <span className="font-bold text-brand-red">{Math.round(amount * 10)} points</span> with this purchase
+                    </div>
+
                     <Button
                       type="submit"
                       variant="primary"
                       size="lg"
-                      className="w-full mt-6"
+                      className="w-full mt-4"
                       isLoading={isSubmitting}
                     >
                       Purchase Gift Card &bull; ${amount.toFixed(2)}
@@ -452,7 +490,7 @@ export default function GiftCardsPage() {
 
                 <div className="h-px bg-neutral-warm/40 my-4" />
 
-                <div className="space-y-3 text-left font-sans text-sm text-charcoal mb-6">
+                 <div className="space-y-3 text-left font-sans text-sm text-charcoal mb-6">
                   <div className="flex justify-between border-b border-neutral-warm/20 pb-2">
                     <span className="text-muted-gray">Recipient</span>
                     <span className="font-semibold">{recipient}</span>
@@ -464,6 +502,10 @@ export default function GiftCardsPage() {
                     </div>
                   )}
                   <div className="flex justify-between border-b border-neutral-warm/20 pb-2">
+                    <span className="text-muted-gray">Gift Card Code</span>
+                    <span className="font-mono font-bold text-brand-red">{purchasedCode}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-neutral-warm/20 pb-2">
                     <span className="text-muted-gray">Card Value</span>
                     <span className="font-semibold font-sans text-brand-red-dark">${amount.toFixed(2)}</span>
                   </div>
@@ -471,6 +513,12 @@ export default function GiftCardsPage() {
                     <span className="text-muted-gray">Delivery Method</span>
                     <span className="font-semibold uppercase">{deliveryMethod}</span>
                   </div>
+                  {purchasedCode && (
+                    <div className="flex justify-between border-b border-neutral-warm/20 pb-2 text-accent-green">
+                      <span>Points Earned</span>
+                      <span className="font-bold">+{Math.round(amount * 10)} pts</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-col space-y-2">

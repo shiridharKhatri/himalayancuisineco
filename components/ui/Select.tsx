@@ -15,7 +15,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     const helperId = `${selectId}-helper`;
 
     const selectStyles = `
-      w-full h-11 px-4 rounded-sm border bg-cream-light font-sans text-sm text-charcoal transition-colors
+      w-full h-11 px-4 rounded-xl border bg-cream-light font-sans text-sm text-charcoal transition-colors
       focus:outline-none focus:ring-2 focus:ring-brand-red focus:ring-offset-1
       disabled:opacity-50 disabled:bg-cream-dark/50 cursor-pointer
       ${error ? "border-brand-red" : "border-neutral-warm hover:border-muted-gray"}

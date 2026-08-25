@@ -11,9 +11,11 @@ import { Select } from "@/components/ui/Select";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { useUIStore } from "@/stores/uiStore";
+import { useSession } from "next-auth/react";
 
 export default function ReservationsPage() {
   const { addToast } = useUIStore();
+  const { data: session } = useSession();
 
   // Booking Form State
   const [name, setName] = React.useState("");
@@ -25,6 +27,14 @@ export default function ReservationsPage() {
   const [seatingArea, setSeatingArea] = React.useState("INDOOR");
   const [occasion, setOccasion] = React.useState("NONE");
   const [notes, setNotes] = React.useState("");
+
+  // Pre-fill user data if logged in
+  React.useEffect(() => {
+    if (session?.user) {
+      if (session.user.name) setName(session.user.name);
+      if (session.user.email) setEmail(session.user.email);
+    }
+  }, [session]);
 
   // UI Flow State
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -52,7 +62,7 @@ export default function ReservationsPage() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleBooking = (e: React.FormEvent) => {
+  const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
       addToast("Please check booking details.", "error");
@@ -61,11 +71,30 @@ export default function ReservationsPage() {
 
     setIsSubmitting(true);
 
-    // Simulate database booking allocation
-    setTimeout(() => {
-      const resCode = `RES-${Math.floor(10000 + Math.random() * 90000)}`;
+    try {
+      const response = await fetch("/api/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          date,
+          time,
+          guests,
+          seatingArea,
+          occasion,
+          notes,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to reserve table");
+      }
+
+      const data = await response.json();
       setConfirmedReservation({
-        code: resCode,
+        code: data.reservation.id,
         name,
         email,
         phone,
@@ -77,8 +106,12 @@ export default function ReservationsPage() {
         notes,
       });
       addToast("Table reserved successfully!", "success");
+    } catch (err: any) {
+      console.error(err);
+      addToast("Error reserving table. Please try again.", "error");
+    } finally {
       setIsSubmitting(false);
-    }, 1500);
+    }
   };
 
   const handleReset = () => {

@@ -7,7 +7,7 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className = "", hoverable = false, padded = true, children, ...props }, ref) => {
-    const baseStyles = "bg-cream-light border border-neutral-warm rounded-[14px] overflow-hidden transition-all duration-300";
+    const baseStyles = "bg-cream-light border border-neutral-warm rounded-[20px] overflow-hidden transition-all duration-300";
     const hoverStyles = hoverable 
       ? "hover:border-brand-red/40 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(21,21,21,0.03)]" 
       : "";

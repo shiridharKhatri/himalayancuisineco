@@ -14,7 +14,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Carousel } from "@/components/ui/Carousel";
 import { MenuItemCard } from "@/components/menu/MenuItemCard";
 import { CustomizationModal } from "@/components/ordering/CustomizationModal";
-import { CartDrawer } from "@/components/ordering/CartDrawer";
 import { VideoHero } from "@/components/home/VideoHero";
 import { Testimonials } from "@/components/ui/Testimonials";
 
@@ -345,8 +344,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Cart Drawer & Item customizing modal */}
-      <CartDrawer />
+      {/* Item customizing modal */}
       <CustomizationModal
         menuItem={customizingItem}
         isOpen={!!customizingItem}

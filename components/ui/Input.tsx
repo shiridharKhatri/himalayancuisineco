@@ -14,7 +14,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const helperId = `${inputId}-helper`;
 
     const inputStyles = `
-      w-full h-11 px-4 rounded-sm border bg-cream-light font-sans text-sm text-charcoal transition-colors
+      w-full h-11 px-4 rounded-xl border bg-cream-light font-sans text-sm text-charcoal transition-colors
       placeholder:text-muted-gray/60 focus:outline-none focus:ring-2 focus:ring-brand-red focus:ring-offset-1
       disabled:opacity-50 disabled:bg-cream-dark/50
       ${error ? "border-brand-red" : "border-neutral-warm hover:border-muted-gray"}

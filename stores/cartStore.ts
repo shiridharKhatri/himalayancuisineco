@@ -2,9 +2,19 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { CartItem, MenuItem, SelectedModifier } from "@/types";
 
+export interface DeliveryAddress {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  lat?: number;
+  lng?: number;
+}
+
 interface CartState {
   items: CartItem[];
   deliveryType: "PICKUP" | "DELIVERY";
+  deliveryAddress: DeliveryAddress | null;
   tip: number;
   couponCode: string | null;
   couponDiscountPercent: number;
@@ -13,6 +23,7 @@ interface CartState {
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   setDeliveryType: (type: "PICKUP" | "DELIVERY") => void;
+  setDeliveryAddress: (address: DeliveryAddress | null) => void;
   setTip: (tipAmount: number) => void;
   applyCoupon: (code: string, discountPercent: number) => void;
   removeCoupon: () => void;
@@ -44,6 +55,7 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       deliveryType: "PICKUP",
+      deliveryAddress: null,
       tip: 0,
       couponCode: null,
       couponDiscountPercent: 0,
@@ -81,19 +93,22 @@ export const useCartStore = create<CartState>()(
       updateQuantity: (id, quantity) =>
         set((state) => ({
           items: state.items
-            .map((item) => (item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item))
+            .map((item) => (item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item))
             .filter((item) => item.quantity > 0),
         })),
 
       clearCart: () =>
         set({
           items: [],
+          deliveryAddress: null,
           tip: 0,
           couponCode: null,
           couponDiscountPercent: 0,
         }),
 
       setDeliveryType: (type) => set({ deliveryType: type }),
+
+      setDeliveryAddress: (address) => set({ deliveryAddress: address }),
 
       setTip: (tipAmount) => set({ tip: tipAmount }),
 
@@ -127,6 +142,7 @@ export const useCartStore = create<CartState>()(
       partialize: (state) => ({
         items: state.items,
         deliveryType: state.deliveryType,
+        deliveryAddress: state.deliveryAddress,
         tip: state.tip,
         couponCode: state.couponCode,
         couponDiscountPercent: state.couponDiscountPercent,

@@ -12,7 +12,6 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { MenuItemCard } from "@/components/menu/MenuItemCard";
 import { CustomizationModal } from "@/components/ordering/CustomizationModal";
-import { CartDrawer } from "@/components/ordering/CartDrawer";
 import { Badge } from "@/components/ui/Badge";
 
 function MenuContent() {
@@ -29,8 +28,6 @@ function MenuContent() {
   const [showOnlyPopular, setShowOnlyPopular] = React.useState(false);
   const [customizingItem, setCustomizingItem] = React.useState<MenuItem | null>(null);
   
-  // Mobile search state
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
   // Mobile filters panel state
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = React.useState(false);
 
@@ -123,44 +120,17 @@ function MenuContent() {
             Savor the fresh, hand-pulled grains, house-made cheeses, steamed dumplings, and authentic slow-simmered curries of Nepal.
           </p>
 
-          {/* Desktop Search Bar */}
-          <div className="hidden md:flex max-w-md mx-auto mt-8 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-gray" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search dishes, ingredients, or flavors..."
-              className="w-full h-12 pl-12 pr-4 rounded-sm border border-neutral-warm bg-cream-light font-sans text-sm text-charcoal transition-colors placeholder:text-muted-gray/50 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-transparent focus-ring"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full text-muted-gray hover:bg-cream-dark transition-colors cursor-pointer"
-                aria-label="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-
           {/* Mobile Search & Filter Action Bar */}
-          <div className="flex md:hidden items-center gap-3 mt-6">
-            <button
-              onClick={() => setIsMobileSearchOpen(true)}
-              className="flex-1 flex items-center space-x-2.5 h-11 px-4 border border-neutral-warm bg-cream-light rounded-sm font-sans text-sm text-muted-gray text-left cursor-pointer"
-            >
-              <Search className="h-4 w-4 shrink-0 text-muted-gray" />
-              <span>Search dishes...</span>
-            </button>
+          <div className="flex md:hidden items-center justify-center mt-6">
             <button
               onClick={() => setIsMobileFiltersOpen(true)}
-              className="h-11 w-11 flex items-center justify-center border border-neutral-warm bg-cream-light rounded-sm text-charcoal hover:bg-cream-dark transition-colors relative cursor-pointer"
-              aria-label="Filters"
+              className="flex-1 flex items-center justify-center gap-2 h-11 px-4 border border-neutral-warm bg-cream-light rounded-xl font-sans text-sm font-semibold text-charcoal hover:bg-cream-dark transition-colors cursor-pointer relative"
+              aria-label="Search & Filters"
             >
-              <SlidersHorizontal className="h-4.5 w-4.5" />
-              {(selectedDiet.length > 0 || selectedSpice !== null || showOnlyPopular) && (
-                <span className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-brand-red rounded-full border border-cream-light" />
+              <SlidersHorizontal className="h-4 w-4 shrink-0 text-muted-gray" />
+              <span>Search & Filter Menu</span>
+              {(selectedDiet.length > 0 || selectedSpice !== null || showOnlyPopular || searchQuery) && (
+                <span className="h-2 w-2 bg-brand-red rounded-full ml-1" />
               )}
             </button>
           </div>
@@ -216,6 +186,27 @@ function MenuContent() {
                   className="font-sans text-xs text-brand-red hover:underline font-semibold cursor-pointer"
                 >
                   Clear All
+                </button>
+              )}
+            </div>
+
+            {/* Search Bar inside filters */}
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-muted-gray" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search menu..."
+                className="w-full h-10 pl-10 pr-8 rounded-xl border border-neutral-warm bg-cream-light font-sans text-xs text-charcoal transition-colors placeholder:text-muted-gray/50 focus:outline-none focus:ring-1 focus:ring-brand-red focus:border-brand-red focus-ring"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-muted-gray hover:bg-cream-dark transition-colors cursor-pointer"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
@@ -321,55 +312,6 @@ function MenuContent() {
         </div>
       </section>
 
-      {/* MOBILE FULL-SCREEN SEARCH */}
-      {isMobileSearchOpen && (
-        <div className="fixed inset-0 z-50 bg-cream-light flex flex-col p-6 animate-fade-in">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-serif text-xl font-bold text-charcoal">Search Menu</h2>
-            <button
-              onClick={() => setIsMobileSearchOpen(false)}
-              className="p-1.5 rounded-full bg-cream-dark text-charcoal cursor-pointer"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-          <div className="relative mb-6">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-gray" />
-            <input
-              type="text"
-              autoFocus
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search dishes or ingredients..."
-              className="w-full h-12 pl-12 pr-4 rounded-sm border border-neutral-warm bg-cream-light font-sans text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-brand-red"
-            />
-          </div>
-          <div className="flex-1 overflow-y-auto space-y-4">
-            {filteredItems.slice(0, 4).map((item) => (
-              <div
-                key={item.id}
-                onClick={() => {
-                  setCustomizingItem(item);
-                  setIsMobileSearchOpen(false);
-                }}
-                className="flex items-center space-x-3 p-3 border border-neutral-warm/40 bg-cream-light rounded-sm cursor-pointer hover:bg-cream-dark/25"
-              >
-                <div className="h-12 w-12 rounded-sm overflow-hidden relative bg-cream-dark shrink-0">
-                  <Image src={item.image} alt={item.name} fill className="object-cover" sizes="48px" />
-                </div>
-                <div>
-                  <h4 className="font-sans text-sm font-semibold text-charcoal">{item.name}</h4>
-                  <span className="font-sans text-xs text-brand-red">${item.price.toFixed(2)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <Button onClick={() => setIsMobileSearchOpen(false)} variant="primary" size="lg" className="w-full mt-4">
-            See {filteredItems.length} Results
-          </Button>
-        </div>
-      )}
-
       {/* MOBILE FILTERS PANEL */}
       {isMobileFiltersOpen && (
         <div className="fixed inset-0 z-50 bg-cream-light flex flex-col p-6 animate-fade-in">
@@ -383,6 +325,27 @@ function MenuContent() {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto space-y-8 text-left">
+            {/* Search Bar inside filters */}
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-muted-gray" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search menu..."
+                className="w-full h-11 pl-10 pr-8 rounded-xl border border-neutral-warm bg-cream-light font-sans text-sm text-charcoal transition-colors placeholder:text-muted-gray/50 focus:outline-none focus:ring-1 focus:ring-brand-red focus:border-brand-red focus-ring"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-muted-gray hover:bg-cream-dark transition-colors cursor-pointer"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
             {/* Popular Toggle */}
             <div className="flex items-center justify-between">
               <span className="font-sans text-sm font-semibold text-charcoal">Show Popular Only</span>
@@ -464,8 +427,7 @@ function MenuContent() {
         </div>
       )}
 
-      {/* Cart Drawer & Item customizing modal */}
-      <CartDrawer />
+      {/* Item customizing modal */}
       <CustomizationModal
         menuItem={customizingItem}
         isOpen={!!customizingItem}
