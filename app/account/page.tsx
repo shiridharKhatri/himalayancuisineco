@@ -18,6 +18,7 @@ import {
   Trash2,
   Check,
   Loader2,
+  Heart,
 } from "lucide-react";
 import Avatar from "boring-avatars";
 import { Header } from "@/components/layout/Header";
@@ -30,6 +31,7 @@ import { Select } from "@/components/ui/Select";
 import { Dialog } from "@/components/ui/Dialog";
 import { useCartStore } from "@/stores/cartStore";
 import { useUIStore } from "@/stores/uiStore";
+import { useFavoritesStore } from "@/stores/favoritesStore";
 import { MENU_ITEMS } from "@/lib/data";
 
 interface DBAddress {
@@ -76,8 +78,10 @@ export default function AccountPage() {
   const { setCartOpen, addToast } = useUIStore();
 
   const [activeTab, setActiveTab] = React.useState<
-    "overview" | "orders" | "rewards" | "reservations" | "addresses"
+    "overview" | "orders" | "rewards" | "reservations" | "addresses" | "favorites"
   >("overview");
+
+  const { itemIds: favoriteIds, toggleFavorite } = useFavoritesStore();
 
   // Profile data states
   const [profileLoading, setProfileLoading] = React.useState(true);
@@ -344,6 +348,7 @@ export default function AccountPage() {
               {[
                 { id: "overview", label: "Overview", icon: <User className="h-4.5 w-4.5" /> },
                 { id: "orders", label: "Order History", icon: <ShoppingBag className="h-4.5 w-4.5" /> },
+                { id: "favorites", label: `Favorites (${favoriteIds.length})`, icon: <Heart className={`h-4.5 w-4.5 ${favoriteIds.length > 0 ? "fill-current" : ""}`} /> },
                 { id: "rewards", label: "Himalayan Rewards", icon: <Award className="h-4.5 w-4.5" /> },
                 { id: "reservations", label: "Table Bookings", icon: <Calendar className="h-4.5 w-4.5" /> },
                 { id: "addresses", label: "Saved Addresses", icon: <MapPin className="h-4.5 w-4.5" /> },
@@ -724,6 +729,111 @@ export default function AccountPage() {
                             <Trash2 className="h-4.5 w-4.5" />
                           </button>
                         </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* FAVORITES TAB CONTENT */}
+              {activeTab === "favorites" && (
+                <div className="space-y-6 text-left animate-fade-in">
+                  <div className="flex justify-between items-center pb-4 border-b border-neutral-warm/40">
+                    <div>
+                      <h3 className="font-serif text-2xl font-bold tracking-tight">
+                        My Favorite Dishes
+                      </h3>
+                      <p className="font-sans text-xs text-muted-gray mt-1">
+                        Your saved specialty items for fast, 1-click ordering.
+                      </p>
+                    </div>
+                    <Link href="/menu">
+                      <Button variant="outline" size="sm">
+                        Browse Full Menu
+                      </Button>
+                    </Link>
+                  </div>
+
+                  {favoriteIds.length === 0 ? (
+                    <div className="text-center py-16 px-4 bg-cream-light border border-neutral-warm/60 rounded-2xl space-y-4">
+                      <div className="inline-flex items-center justify-center h-14 w-14 bg-brand-red-soft/40 rounded-full text-brand-red mb-1">
+                        <Heart className="h-7 w-7" />
+                      </div>
+                      <h4 className="font-serif text-xl font-bold text-charcoal">
+                        No favorite dishes saved yet
+                      </h4>
+                      <p className="font-sans text-xs text-muted-gray max-w-md mx-auto leading-relaxed">
+                        Tap the heart icon on any dish across our menu to save it here for fast reordering anytime!
+                      </p>
+                      <Link href="/menu" className="inline-block pt-2">
+                        <Button variant="primary" size="sm">
+                          Explore Menu
+                        </Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {MENU_ITEMS.filter((item) => favoriteIds.includes(item.id)).map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-neutral-warm/70 shadow-xs hover:border-charcoal/30 transition-all text-left"
+                        >
+                          <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-cream-dark flex-shrink-0 border border-neutral-warm/20">
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                              sizes="80px"
+                            />
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-1">
+                              <h4 className="font-serif text-base font-bold text-charcoal truncate">
+                                {item.name}
+                              </h4>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  toggleFavorite(item.id);
+                                  addToast(`${item.name} removed from favorites`, "info");
+                                }}
+                                className="text-muted-gray hover:text-brand-red p-1 rounded-full transition-colors cursor-pointer"
+                                title="Remove from favorites"
+                              >
+                                <Heart className="h-4 w-4 fill-brand-red text-brand-red" />
+                              </button>
+                            </div>
+
+                            <p className="font-sans text-xs text-muted-gray line-clamp-1 mt-0.5">
+                              {item.description}
+                            </p>
+
+                            <div className="flex items-center justify-between mt-3">
+                              <span className="font-sans text-sm font-bold text-charcoal">
+                                ${item.price.toFixed(2)}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  addItem({
+                                    menuItem: item,
+                                    quantity: 1,
+                                    selectedModifiers: [],
+                                  });
+                                  addToast(`${item.name} added to cart!`, "success");
+                                  setCartOpen(true);
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-[#B51C20] hover:bg-[#9B181B] text-white font-sans text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                              >
+                                <ShoppingBag className="h-3.5 w-3.5" />
+                                <span>Order Now</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   )}

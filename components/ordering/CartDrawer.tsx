@@ -164,7 +164,12 @@ export const CartDrawer: React.FC = () => {
               </Link>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
+            <div
+              className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5 space-y-5"
+              data-lenis-prevent="true"
+              data-lenis-prevent-wheel="true"
+              data-lenis-prevent-touch="true"
+            >
               {/* Delivery/Pickup Selector & Details Row */}
               <div className="space-y-3">
                 {/* Toggle switch */}

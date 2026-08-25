@@ -431,6 +431,28 @@ export const OPEN_JOBS: Job[] = [
     description: "Join our specialty momo folding counter. Must be quick and precise, folding standard shapes with consistent wrapper density.",
     isPublished: true,
     createdAt: "2026-08-22"
+  },
+  {
+    id: "job-tandoor",
+    title: "Tandoor & Curry Specialist",
+    location: "Civic Center, San Francisco",
+    type: "Full-time",
+    schedule: "Thursday to Monday",
+    salary: "$24 - $28 / hour",
+    description: "Operate traditional high-heat clay tandoor ovens, sear clay-oven marinades, and prepare slow-simmered Himalayan curries.",
+    isPublished: true,
+    createdAt: "2026-08-23"
+  },
+  {
+    id: "job-host",
+    title: "Front of House Hospitality Host",
+    location: "Civic Center, San Francisco",
+    type: "Part-time / Full-time",
+    schedule: "Evenings & Weekends",
+    salary: "$18 - $22 / hr + tips",
+    description: "Welcome guests with warm Himalayan hospitality, manage table reservations, and ensure memorable dining experiences.",
+    isPublished: true,
+    createdAt: "2026-08-24"
   }
 ];
 

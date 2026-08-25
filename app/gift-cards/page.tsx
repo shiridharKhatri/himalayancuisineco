@@ -3,7 +3,22 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { CreditCard, Send, CheckCircle2, DollarSign, Gift } from "lucide-react";
+import {
+  CreditCard,
+  Send,
+  CheckCircle2,
+  DollarSign,
+  Gift,
+  Printer,
+  UploadCloud,
+  Trash2,
+  Sparkles,
+  Heart,
+  PartyPopper,
+  Snowflake,
+  Crown,
+  Image as ImageIcon,
+} from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
@@ -17,17 +32,23 @@ export default function GiftCardsPage() {
   const { addToast } = useUIStore();
 
   // Gift Card Configuration Form State
-  const [style, setStyle] = React.useState("birthday"); // birthday, thank-you, holiday, classic
+  const [style, setStyle] = React.useState<"birthday" | "thank-you" | "holiday" | "classic" | "custom">("birthday");
   const [amount, setAmount] = React.useState<number>(50);
   const [customAmount, setCustomAmount] = React.useState("");
-  const [deliveryMethod, setDeliveryMethod] = React.useState("email"); // email, print
-  
+  const [deliveryMethod, setDeliveryMethod] = React.useState<"email" | "print">("email");
+
   // Customization info
   const [recipient, setRecipient] = React.useState("");
   const [recipientEmail, setRecipientEmail] = React.useState("");
   const [sender, setSender] = React.useState("");
   const [message, setMessage] = React.useState("");
   const [deliveryDate, setDeliveryDate] = React.useState("");
+
+  // Custom Image Upload State
+  const [customImage, setCustomImage] = React.useState<string | null>(null);
+  const [customImageName, setCustomImageName] = React.useState<string>("");
+  const [isDragging, setIsDragging] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Balance Check State
   const [balanceCode, setBalanceCode] = React.useState("");
@@ -37,40 +58,8 @@ export default function GiftCardsPage() {
   // Checkout flow state
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isPurchased, setIsPurchased] = React.useState(false);
+  const [purchasedCode, setPurchasedCode] = React.useState("");
   const [errors, setErrors] = React.useState<Record<string, string>>({});
-
-  const cardStyleColors: Record<string, { bgImage: string; text: string; border: string; overlayBg: string; label: string }> = {
-    birthday: {
-      bgImage: "/images/happy_birthday.svg",
-      text: "text-brand-red-dark",
-      border: "border-brand-red/15",
-      overlayBg: "bg-cream-light/80 backdrop-blur-[6px]",
-      label: "Happy Birthday",
-    },
-    "thank-you": {
-      bgImage: "/images/thank_you.svg",
-      text: "text-charcoal",
-      border: "border-amber-500/20",
-      overlayBg: "bg-cream-light/80 backdrop-blur-[6px]",
-      label: "Thank You",
-    },
-    holiday: {
-      bgImage: "/images/happy_holidays.svg",
-      text: "text-[#2C4A3E]",
-      border: "border-emerald-800/15",
-      overlayBg: "bg-cream-light/80 backdrop-blur-[6px]",
-      label: "Season's Greetings",
-    },
-    classic: {
-      bgImage: "/images/gift_card.svg",
-      text: "text-cream-light",
-      border: "border-white/15",
-      overlayBg: "bg-charcoal/65 backdrop-blur-[6px]",
-      label: "Himalayan Classic",
-    },
-  };
-
-  const currentTheme = cardStyleColors[style] || cardStyleColors.classic;
 
   const handleAmountClick = (val: number) => {
     setAmount(val);
@@ -83,6 +72,26 @@ export default function GiftCardsPage() {
     if (!isNaN(parsed) && parsed > 0) {
       setAmount(parsed);
     }
+  };
+
+  const handleCustomImageUpload = (file: File | null) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      addToast("Please upload a valid image file (PNG, JPG, WEBP).", "error");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      addToast("Image size must be under 5MB.", "error");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setCustomImage(e.target?.result as string);
+      setCustomImageName(file.name);
+      setStyle("custom");
+    };
+    reader.readAsDataURL(file);
   };
 
   const validateForm = () => {
@@ -101,8 +110,6 @@ export default function GiftCardsPage() {
     return Object.keys(errs).length === 0;
   };
 
-  const [purchasedCode, setPurchasedCode] = React.useState("");
-
   const handlePurchase = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
@@ -118,12 +125,12 @@ export default function GiftCardsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           recipientName: recipient.trim(),
-          recipientEmail: recipientEmail.trim(),
+          recipientEmail: deliveryMethod === "email" ? recipientEmail.trim() : `print-${Date.now()}@himalayancuisineco.com`,
           senderName: sender.trim(),
           message: message.trim(),
           cardStyle: style,
           amount: amount,
-          deliveryDate: deliveryDate,
+          deliveryDate: deliveryMethod === "email" ? deliveryDate : undefined,
         }),
       });
 
@@ -134,7 +141,12 @@ export default function GiftCardsPage() {
       const data = await response.json();
       setPurchasedCode(data.giftCard.code);
       setIsPurchased(true);
-      addToast("Gift card purchased successfully!", "success");
+      addToast(
+        deliveryMethod === "email"
+          ? "Gift card purchased and scheduled for email delivery!"
+          : "Gift card generated! You can now print your card.",
+        "success"
+      );
     } catch (err: any) {
       console.error(err);
       addToast("Error purchasing gift card. Please try again.", "error");
@@ -149,31 +161,28 @@ export default function GiftCardsPage() {
     setCheckedBalance(null);
 
     if (!balanceCode.trim()) {
-      setBalanceError("Please enter a card code");
+      setBalanceError("Please enter a valid gift card code");
       return;
     }
 
     try {
-      const response = await fetch(`/api/gift-cards?code=${encodeURIComponent(balanceCode.trim())}`);
+      const response = await fetch(`/api/gift-cards/balance?code=${encodeURIComponent(balanceCode.trim())}`);
+      const data = await response.json();
+
       if (!response.ok) {
-        if (response.status === 404) {
-          setBalanceError("Gift card code not found or inactive.");
-          return;
-        }
-        throw new Error("Failed to check balance");
+        setBalanceError(data.error || "Card not found or inactive");
+        return;
       }
 
-      const data = await response.json();
       setCheckedBalance(data.balance);
-      addToast("Gift card balance retrieved.", "success");
-    } catch (err: any) {
-      console.error(err);
-      setBalanceError("Error verifying balance. Please try again.");
+    } catch (err) {
+      setBalanceError("Failed to check card balance. Please verify code.");
     }
   };
 
   const handleResetPurchase = () => {
     setIsPurchased(false);
+    setPurchasedCode("");
     setRecipient("");
     setRecipientEmail("");
     setSender("");
@@ -183,59 +192,245 @@ export default function GiftCardsPage() {
     setAmount(50);
   };
 
+  const handlePrintCard = () => {
+    window.print();
+  };
+
+  // Render bespoke vector SVG patterns according to the selected theme
+  const renderCardPattern = () => {
+    if (style === "custom" && customImage) {
+      return (
+        <div
+          className="absolute inset-0 bg-cover bg-center z-0"
+          style={{ backgroundImage: `url(${customImage})` }}
+        >
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+        </div>
+      );
+    }
+
+    if (style === "birthday") {
+      return (
+        <div className="absolute inset-0 bg-gradient-to-br from-[#841920] via-[#A9262F] to-[#5C0D12] overflow-hidden z-0">
+          {/* Radiating festive sparkles & party confetti pattern */}
+          <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="birthday-confetti" width="60" height="60" patternUnits="userSpaceOnUse">
+                <circle cx="10" cy="10" r="2.5" fill="#FFE599" />
+                <circle cx="45" cy="15" r="1.5" fill="#FFFFFF" />
+                <circle cx="20" cy="45" r="3" fill="#F4D9D8" />
+                <circle cx="50" cy="45" r="2" fill="#FFE599" />
+                {/* 4-point sparkle star */}
+                <path d="M30 20 L32 28 L40 30 L32 32 L30 40 L28 32 L20 30 L28 28 Z" fill="#FFE599" />
+                <path d="M10 35 L11 38 L14 39 L11 40 L10 43 L9 40 L6 39 L9 38 Z" fill="#FFFFFF" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#birthday-confetti)" />
+          </svg>
+          {/* Radial ambient glow */}
+          <div className="absolute -top-16 -right-16 w-56 h-56 bg-amber-400/20 rounded-full blur-2xl" />
+        </div>
+      );
+    }
+
+    if (style === "thank-you") {
+      return (
+        <div className="absolute inset-0 bg-gradient-to-br from-[#6E4208] via-[#975B0E] to-[#492B04] overflow-hidden z-0">
+          {/* Sacred Lotus Petal and Golden Mandala Weave */}
+          <svg className="absolute inset-0 w-full h-full opacity-25 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="thanks-lotus" width="80" height="80" patternUnits="userSpaceOnUse">
+                {/* Interlocking lotus petals */}
+                <path d="M40 0 C25 20 25 40 40 60 C55 40 55 20 40 0 Z" fill="none" stroke="#FDE68A" strokeWidth="1" />
+                <path d="M0 40 C20 25 40 25 60 40 C40 55 20 55 0 40 Z" fill="none" stroke="#FDE68A" strokeWidth="1" />
+                <circle cx="40" cy="40" r="16" fill="none" stroke="#FDE68A" strokeWidth="1" strokeDasharray="2,3" />
+                <circle cx="40" cy="40" r="6" fill="#FDE68A" opacity="0.6" />
+                <circle cx="0" cy="0" r="4" fill="#FDE68A" opacity="0.4" />
+                <circle cx="80" cy="0" r="4" fill="#FDE68A" opacity="0.4" />
+                <circle cx="0" cy="80" r="4" fill="#FDE68A" opacity="0.4" />
+                <circle cx="80" cy="80" r="4" fill="#FDE68A" opacity="0.4" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#thanks-lotus)" />
+          </svg>
+          <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-amber-300/15 rounded-full blur-3xl" />
+        </div>
+      );
+    }
+
+    if (style === "holiday") {
+      return (
+        <div className="absolute inset-0 bg-gradient-to-br from-[#123C27] via-[#1E543A] to-[#0A2417] overflow-hidden z-0">
+          {/* Himalayan Winter Snow & Geometric Pine Crystals */}
+          <svg className="absolute inset-0 w-full h-full opacity-25 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="holiday-snow" width="70" height="70" patternUnits="userSpaceOnUse">
+                {/* 6-point crystalline snowflake */}
+                <path d="M35 15 L35 55 M15 35 L55 35 M21 21 L49 49 M21 49 L49 21" stroke="#FFFFFF" strokeWidth="1" />
+                <circle cx="35" cy="35" r="3.5" fill="#E2E8F0" />
+                <circle cx="10" cy="10" r="1.5" fill="#FFFFFF" />
+                <circle cx="60" cy="10" r="2" fill="#FFFFFF" opacity="0.7" />
+                <circle cx="10" cy="60" r="1.5" fill="#FFFFFF" />
+                <circle cx="60" cy="60" r="2" fill="#FFFFFF" opacity="0.7" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#holiday-snow)" />
+          </svg>
+          <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-300/15 rounded-full blur-2xl" />
+        </div>
+      );
+    }
+
+    // Classic Himalayan Heritage (Default)
+    return (
+      <div className="absolute inset-0 bg-gradient-to-br from-[#181614] via-[#28231C] to-[#0F0E0C] overflow-hidden z-0">
+        {/* Intricate Himalayan Brass Mandala Geometry */}
+        <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="classic-mandala" width="90" height="90" patternUnits="userSpaceOnUse">
+              <rect x="0" y="0" width="90" height="90" fill="none" stroke="#D4AF37" strokeWidth="0.5" />
+              <circle cx="45" cy="45" r="30" fill="none" stroke="#D4AF37" strokeWidth="0.75" />
+              <circle cx="45" cy="45" r="20" fill="none" stroke="#D4AF37" strokeWidth="0.75" strokeDasharray="3,3" />
+              <polygon points="45,15 71,60 19,60" fill="none" stroke="#D4AF37" strokeWidth="0.75" />
+              <polygon points="45,75 71,30 19,30" fill="none" stroke="#D4AF37" strokeWidth="0.75" />
+              <circle cx="45" cy="45" r="4" fill="#D4AF37" opacity="0.7" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#classic-mandala)" />
+        </svg>
+        <div className="absolute -top-12 -left-12 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl" />
+      </div>
+    );
+  };
+
+  const getStyleHeading = () => {
+    switch (style) {
+      case "birthday":
+        return "🎉 Happy Birthday";
+      case "thank-you":
+        return "✨ With Warmest Thanks";
+      case "holiday":
+        return "❄️ Season's Greetings";
+      case "custom":
+        return "🎁 Special Himalayan Feast";
+      default:
+        return "🏔️ Himalayan Heritage";
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-cream-base text-charcoal">
       <Header />
 
       <main className="flex-grow py-12 md:py-16">
-        <div className="mx-auto max-w-[1100px] px-6">
-          
+        <div className="mx-auto max-w-[1240px] px-6">
           {/* Header Text */}
           <div className="text-center max-w-xl mx-auto mb-12">
-            <Badge variant="soft-red" className="mb-2">Digital Gift Cards</Badge>
-            <h1 className="font-serif text-4xl md:text-5xl font-bold tracking-tight">
+            <Badge variant="soft-red" className="mb-2">Digital &amp; Printable Gift Cards</Badge>
+            <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-charcoal">
               Himalayan Gift Cards
             </h1>
             <p className="font-sans text-sm md:text-base text-muted-gray mt-3 leading-relaxed">
-              Share the experience of fine Nepalese dining. Send a digital gift card instantly via email, or schedule it for a special day.
+              Share the warmth of authentic Nepalese dining. Send instantly via email or print at home.
             </p>
           </div>
 
           {!isPurchased ? (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left">
-              
               {/* LEFT COLUMN: CUSTOMIZER FORM */}
               <div className="lg:col-span-7 space-y-8">
                 <Card>
                   <form onSubmit={handlePurchase} className="space-y-6">
                     <h3 className="font-serif text-xl font-semibold border-b border-neutral-warm/40 pb-3">
-                      1. Choose Card Style
+                      1. Choose Card Design
                     </h3>
 
-                    {/* Themes selectors */}
-                    <div className="grid grid-cols-4 gap-3">
+                    {/* 5 Distinct Themes: Birthday, Thanks, Holiday, Classic, Custom */}
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                       {[
-                        { id: "birthday", label: "Birthday" },
-                        { id: "thank-you", label: "Thanks" },
-                        { id: "holiday", label: "Holiday" },
-                        { id: "classic", label: "Classic" },
+                        { id: "birthday", label: "Birthday", icon: <PartyPopper className="h-4 w-4 text-brand-red" /> },
+                        { id: "thank-you", label: "Thanks", icon: <Heart className="h-4 w-4 text-amber-600" /> },
+                        { id: "holiday", label: "Holiday", icon: <Snowflake className="h-4 w-4 text-emerald-600" /> },
+                        { id: "classic", label: "Classic", icon: <Crown className="h-4 w-4 text-amber-500" /> },
+                        { id: "custom", label: "Custom", icon: <ImageIcon className="h-4 w-4 text-blue-600" /> },
                       ].map((item) => (
                         <button
                           key={item.id}
                           type="button"
-                          onClick={() => setStyle(item.id)}
-                          className={`py-2 border rounded-sm font-sans text-xs font-medium tracking-wide text-center transition-all cursor-pointer ${
+                          onClick={() => setStyle(item.id as any)}
+                          className={`py-3 px-2 border rounded-xl font-sans text-xs font-semibold tracking-wide flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
                             style === item.id
-                              ? "border-brand-red bg-brand-red-soft/20 text-brand-red-dark"
-                              : "border-neutral-warm bg-cream-light text-charcoal hover:bg-cream-dark"
+                              ? "border-[#B51C20] bg-[#B51C20]/10 text-[#B51C20] shadow-xs ring-1 ring-[#B51C20]"
+                              : "border-neutral-warm/80 bg-cream-light text-charcoal hover:bg-cream-dark"
                           }`}
                         >
-                          {item.label}
+                          {item.icon}
+                          <span>{item.label}</span>
                         </button>
                       ))}
                     </div>
 
-                    <h3 className="font-serif text-xl font-semibold border-b border-neutral-warm/40 pt-4 pb-3">
+                    {/* Custom Image Uploader Section (when custom is selected) */}
+                    {style === "custom" && (
+                      <div className="p-4 rounded-xl border border-dashed border-neutral-warm bg-white space-y-3">
+                        <span className="font-sans text-xs font-semibold text-charcoal block">
+                          Upload Custom Photo for Gift Card:
+                        </span>
+
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={(e) => handleCustomImageUpload(e.target.files?.[0] || null)}
+                          accept="image/*"
+                          className="hidden"
+                        />
+
+                        {customImage ? (
+                          <div className="flex items-center justify-between p-2.5 rounded-lg bg-cream-dark/50 border border-neutral-warm/40">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-neutral-warm/40">
+                                <Image src={customImage} alt="Custom upload" fill className="object-cover" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-sans text-xs font-semibold text-charcoal truncate">
+                                  {customImageName}
+                                </p>
+                                <span className="font-sans text-[10px] text-accent-green font-medium">
+                                  ✓ Custom design active
+                                </span>
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCustomImage(null);
+                                setCustomImageName("");
+                              }}
+                              className="p-1.5 text-muted-gray hover:text-brand-red rounded-lg transition-colors cursor-pointer"
+                              title="Remove custom image"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="py-6 px-4 border border-dashed border-neutral-warm/80 rounded-lg text-center cursor-pointer hover:bg-cream-light transition-colors"
+                          >
+                            <UploadCloud className="h-6 w-6 text-muted-gray mx-auto mb-1.5" />
+                            <p className="font-sans text-xs font-semibold text-charcoal">
+                              Click to select custom image
+                            </p>
+                            <p className="font-sans text-[10px] text-muted-gray mt-0.5">
+                              PNG, JPG, or WEBP (up to 5MB)
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <h3 className="font-serif text-xl font-semibold border-b border-neutral-warm/40 pt-2 pb-3">
                       2. Choose Card Amount
                     </h3>
 
@@ -246,9 +441,9 @@ export default function GiftCardsPage() {
                           key={val}
                           type="button"
                           onClick={() => handleAmountClick(val)}
-                          className={`py-2.5 border rounded-sm font-sans text-sm font-semibold transition-all cursor-pointer ${
+                          className={`py-2.5 border rounded-xl font-sans text-sm font-semibold transition-all cursor-pointer ${
                             amount === val && !customAmount
-                              ? "bg-brand-red text-cream-light border-transparent"
+                              ? "bg-[#B51C20] text-white border-transparent shadow-xs"
                               : "bg-cream-light text-charcoal border-neutral-warm hover:bg-cream-dark"
                           }`}
                         >
@@ -267,33 +462,36 @@ export default function GiftCardsPage() {
                       placeholder="Enter value (Min $10)"
                     />
 
-                    <h3 className="font-serif text-xl font-semibold border-b border-neutral-warm/40 pt-4 pb-3">
-                      3. Personalization & Delivery
+                    <h3 className="font-serif text-xl font-semibold border-b border-neutral-warm/40 pt-2 pb-3">
+                      3. Personalization &amp; Delivery Method
                     </h3>
 
                     <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      {/* Delivery Mode: Email vs Print */}
+                      <div className="grid grid-cols-2 gap-3">
                         <button
                           type="button"
                           onClick={() => setDeliveryMethod("email")}
-                          className={`py-3 border rounded-sm font-sans text-xs font-semibold uppercase tracking-wider text-center transition-all cursor-pointer ${
+                          className={`py-3 border rounded-xl font-sans text-xs font-semibold uppercase tracking-wider text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                             deliveryMethod === "email"
-                              ? "border-brand-red bg-brand-red-soft/20 text-brand-red-dark"
-                              : "border-neutral-warm bg-cream-light text-charcoal"
+                              ? "border-[#B51C20] bg-[#B51C20]/10 text-[#B51C20] ring-1 ring-[#B51C20]"
+                              : "border-neutral-warm bg-cream-light text-charcoal hover:bg-cream-dark"
                           }`}
                         >
-                          Deliver via Email
+                          <Send className="h-3.5 w-3.5" />
+                          <span>Deliver via Email</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setDeliveryMethod("print")}
-                          className={`py-3 border rounded-sm font-sans text-xs font-semibold uppercase tracking-wider text-center transition-all cursor-pointer ${
+                          className={`py-3 border rounded-xl font-sans text-xs font-semibold uppercase tracking-wider text-center transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                             deliveryMethod === "print"
-                              ? "border-brand-red bg-brand-red-soft/20 text-brand-red-dark"
-                              : "border-neutral-warm bg-cream-light text-charcoal"
+                              ? "border-[#B51C20] bg-[#B51C20]/10 text-[#B51C20] ring-1 ring-[#B51C20]"
+                              : "border-neutral-warm bg-cream-light text-charcoal hover:bg-cream-dark"
                           }`}
                         >
-                          Print at Home
+                          <Printer className="h-3.5 w-3.5" />
+                          <span>Print at Home (PDF)</span>
                         </button>
                       </div>
 
@@ -334,7 +532,7 @@ export default function GiftCardsPage() {
                           onChange={(e) => setMessage(e.target.value)}
                           placeholder="Write a warm note to your recipient here..."
                           rows={3}
-                          className="w-full px-4 py-3 rounded-sm border border-neutral-warm bg-cream-light font-sans text-sm text-charcoal placeholder:text-muted-gray/50 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                          className="w-full px-4 py-3 rounded-xl border border-neutral-warm bg-cream-light font-sans text-sm text-charcoal placeholder:text-muted-gray/50 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-transparent"
                           maxLength={150}
                         />
                       </div>
@@ -363,80 +561,79 @@ export default function GiftCardsPage() {
                       className="w-full mt-4"
                       isLoading={isSubmitting}
                     >
-                      Purchase Gift Card &bull; ${amount.toFixed(2)}
+                      {deliveryMethod === "email" ? "Send Gift Card" : "Generate & Purchase Gift Card"} &bull; ${amount.toFixed(2)}
                     </Button>
                   </form>
                 </Card>
               </div>
 
-              {/* RIGHT COLUMN: LIVE PREVIEW & BALANCE CHECKER */}
-              <div className="lg:col-span-5 space-y-8 lg:sticky lg:top-[160px]">
-                
+              {/* RIGHT COLUMN: LIVE VECTOR CARD PREVIEW & BALANCE CHECKER */}
+              <div className="lg:col-span-5 space-y-8 lg:sticky lg:top-8">
                 {/* LIVE PREVIEW CONTAINER */}
                 <div className="flex flex-col space-y-3">
                   <span className="font-sans text-xs font-bold uppercase tracking-wider text-muted-gray">
                     Live Gift Card Preview
                   </span>
-                  
+
                   {/* Visual Card Frame */}
-                  <div 
-                    style={{ 
-                      backgroundImage: `url(${currentTheme.bgImage})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center'
-                    }}
-                    className={`aspect-[16/10] w-full rounded-[24px] p-3 flex flex-col justify-between border relative overflow-hidden shadow-[0_12px_40px_rgba(206,166,112,0.12)] transition-all duration-500 hover:shadow-[0_20px_50px_rgba(206,166,112,0.22)] hover:-translate-y-1 ${currentTheme.border}`}
-                  >
+                  <div className="aspect-[16/10] w-full rounded-[24px] p-3 flex flex-col justify-between relative overflow-hidden shadow-[0_12px_40px_rgba(21,21,21,0.18)] transition-all duration-500 hover:scale-[1.02] border border-white/20">
+                    {/* Dynamic Vector Pattern Background */}
+                    {renderCardPattern()}
+
                     {/* Gloss sheen overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/15 pointer-events-none z-0" />
-                    
-                    {/* Inner Glass Container */}
-                    <div className={`w-full h-full rounded-[18px] p-5 flex flex-col justify-between border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] z-10 ${currentTheme.overlayBg}`}>
-                      
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/25 pointer-events-none z-10" />
+
+                    {/* Inner Frosted Glass Frame */}
+                    <div className="w-full h-full rounded-[18px] p-5 flex flex-col justify-between border border-white/25 bg-black/25 backdrop-blur-[6px] shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] z-20 text-white">
                       {/* Logo and Theme label */}
                       <div className="flex justify-between items-center w-full">
                         <div className="relative h-6 w-24">
-                          <Image 
-                            src="/images/logo.png" 
-                            alt="Himalayan Logo" 
-                            fill 
-                            className={`object-contain object-left ${style === 'classic' ? 'invert brightness-200' : ''}`} 
+                          <Image
+                            src="/images/logo.png"
+                            alt="Himalayan Logo"
+                            fill
+                            className="object-contain object-left invert brightness-200"
                           />
                         </div>
-                        <span className={`font-serif text-sm font-bold italic leading-none ${currentTheme.text}`}>
-                          {currentTheme.label}
+                        <span className="font-serif text-xs md:text-sm font-bold italic tracking-wide text-amber-200/90 drop-shadow-xs">
+                          {getStyleHeading()}
                         </span>
                       </div>
 
                       {/* Recipient Message Block */}
-                      <div className="space-y-1.5 mt-3 text-left">
-                        {recipient && (
-                          <p className={`font-serif text-base font-bold leading-none ${currentTheme.text}`}>
+                      <div className="space-y-1 mt-2 text-left">
+                        {recipient ? (
+                          <p className="font-serif text-lg font-bold leading-tight text-white drop-shadow-xs">
                             For: {recipient}
+                          </p>
+                        ) : (
+                          <p className="font-serif text-base font-bold opacity-80 text-white/90">
+                            For: Recipient Name
                           </p>
                         )}
                         {message ? (
-                          <p className={`font-sans text-xs italic opacity-90 leading-relaxed line-clamp-3 max-w-[90%] ${currentTheme.text}`}>
-                            "{message}"
+                          <p className="font-sans text-xs italic text-white/90 leading-relaxed line-clamp-3 max-w-[95%] drop-shadow-xs">
+                            &ldquo;{message}&rdquo;
                           </p>
                         ) : (
-                          <p className={`font-sans text-xs italic opacity-60 leading-relaxed line-clamp-3 max-w-[90%] ${currentTheme.text}`}>
-                            "Enjoy some authentic Jhol Momos and mountain curries on me!"
+                          <p className="font-sans text-xs italic text-white/70 leading-relaxed line-clamp-3 max-w-[95%]">
+                            &ldquo;Enjoy handcrafted dumplings and authentic Himalayan curries!&rdquo;
                           </p>
                         )}
                       </div>
 
                       {/* Footer block */}
-                      <div className="flex justify-between items-end border-t border-black/5 pt-3 mt-1.5">
-                        <div className={`font-sans text-[9px] uppercase tracking-wider font-semibold opacity-75 text-left ${currentTheme.text}`}>
+                      <div className="flex justify-between items-end border-t border-white/15 pt-2.5 mt-1">
+                        <div className="font-sans text-[10px] uppercase tracking-wider font-semibold text-white/80 text-left">
                           {sender ? <span>From: {sender}</span> : <span>Digital Gift Card</span>}
-                          <span className="block mt-0.5 opacity-60 text-[8px] font-normal lowercase tracking-normal">digital code generated upon checkout</span>
+                          <span className="block mt-0.5 text-[8px] font-normal lowercase tracking-normal text-white/60">
+                            {deliveryMethod === "email" ? "Instant email claim code" : "Print-at-home certificate"}
+                          </span>
                         </div>
-                        <span className={`font-sans text-3xl font-extrabold tracking-tight ${currentTheme.text}`}>
+                        <span className="font-sans text-3xl font-extrabold tracking-tight text-amber-300 drop-shadow-xs">
                           ${amount.toFixed(2)}
                         </span>
                       </div>
-
                     </div>
                   </div>
                 </div>
@@ -448,85 +645,115 @@ export default function GiftCardsPage() {
                   </h4>
                   <form onSubmit={handleCheckBalance} className="space-y-4">
                     <Input
-                      label="Gift Card Code"
+                      label="Card Code"
                       value={balanceCode}
-                      onChange={(e) => setBalanceCode(e.target.value)}
+                      onChange={(e) => setBalanceCode(e.target.value.toUpperCase())}
+                      placeholder="e.g. HIMA-GIFT-XXXX"
                       error={balanceError}
-                      placeholder="e.g. HIM-100234"
+                      helperText="Enter the 14-character alphanumeric code."
                     />
-                    <Button type="submit" variant="secondary" size="sm" className="w-full">
-                      Verify Balance
+                    <Button type="submit" variant="outline" size="sm" className="w-full">
+                      Check Balance
                     </Button>
-
-                    {checkedBalance !== null && (
-                      <div className="bg-brand-red-soft/20 border border-brand-red/10 rounded-sm p-4 text-center mt-3 animate-fade-in">
-                        <span className="font-sans text-xs text-muted-gray block uppercase tracking-wider mb-1">
-                          Current Card Balance
-                        </span>
-                        <span className="font-sans text-3xl font-extrabold text-brand-red-dark">
-                          ${checkedBalance.toFixed(2)}
-                        </span>
-                      </div>
-                    )}
                   </form>
+
+                  {checkedBalance !== null && (
+                    <div className="mt-4 p-4 bg-cream-dark/60 rounded-xl border border-neutral-warm/50 text-center animate-fade-in">
+                      <span className="font-sans text-xs uppercase font-bold tracking-wider text-muted-gray block">
+                        Available Balance
+                      </span>
+                      <span className="font-serif text-3xl font-bold text-brand-red block mt-1">
+                        ${checkedBalance.toFixed(2)}
+                      </span>
+                      <span className="font-sans text-[11px] text-muted-gray mt-1 block">
+                        Card is active and ready to redeem at checkout.
+                      </span>
+                    </div>
+                  )}
                 </Card>
-
               </div>
-
             </div>
           ) : (
-            // PURCHASE CONFIRMED
-            <div className="max-w-md mx-auto">
+            /* PURCHASE CONFIRMATION SCREEN & PRINTABLE CARD */
+            <div className="max-w-xl mx-auto space-y-6">
               <Card className="border border-brand-red/20 bg-cream-light text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-brand-red" />
-                
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#B51C20]" />
+
                 <div className="inline-flex items-center justify-center h-12 w-12 bg-brand-red-soft rounded-full text-brand-red mb-4 mt-2">
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
-                
+
                 <Badge variant="success" className="mb-2">Payment Confirmed</Badge>
-                <h3 className="font-serif text-2xl font-bold mb-1">Gift Card Purchased!</h3>
-                <span className="font-sans text-xs text-muted-gray block mb-6">A verification receipt has been emailed to you.</span>
+                <h3 className="font-serif text-2xl font-bold mb-1">Gift Card Ready!</h3>
+                <span className="font-sans text-xs text-muted-gray block mb-6">
+                  {deliveryMethod === "email"
+                    ? `Claim code has been scheduled for delivery to ${recipientEmail}.`
+                    : "Your printable gift card certificate has been generated."}
+                </span>
 
-                <div className="h-px bg-neutral-warm/40 my-4" />
+                {/* Printable Gift Card Visual */}
+                <div className="my-6 text-left">
+                  <div className="aspect-[16/10] w-full rounded-[24px] p-3 flex flex-col justify-between relative overflow-hidden shadow-[0_8px_30px_rgba(21,21,21,0.1)] border border-white/20">
+                    {renderCardPattern()}
+                    <div className="w-full h-full rounded-[18px] p-5 flex flex-col justify-between border border-white/25 bg-black/30 backdrop-blur-[6px] z-20 text-white">
+                      <div className="flex justify-between items-center">
+                        <div className="relative h-6 w-24">
+                          <Image src="/images/logo.png" alt="Logo" fill className="object-contain object-left invert brightness-200" />
+                        </div>
+                        <span className="font-serif text-xs font-bold italic text-amber-200">{getStyleHeading()}</span>
+                      </div>
 
-                 <div className="space-y-3 text-left font-sans text-sm text-charcoal mb-6">
+                      <div className="space-y-1">
+                        <p className="font-serif text-lg font-bold">For: {recipient}</p>
+                        {message && <p className="font-sans text-xs italic text-white/90 line-clamp-2">&ldquo;{message}&rdquo;</p>}
+                      </div>
+
+                      <div className="flex justify-between items-end border-t border-white/15 pt-2">
+                        <div>
+                          <p className="font-mono font-bold text-sm tracking-widest text-amber-300">{purchasedCode}</p>
+                          <span className="text-[9px] text-white/70">From: {sender}</span>
+                        </div>
+                        <span className="font-sans text-2xl font-extrabold text-amber-300">${amount.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3 text-left font-sans text-sm text-charcoal mb-6 bg-white p-4 rounded-xl border border-neutral-warm/40">
                   <div className="flex justify-between border-b border-neutral-warm/20 pb-2">
                     <span className="text-muted-gray">Recipient</span>
                     <span className="font-semibold">{recipient}</span>
                   </div>
-                  {recipientEmail && (
-                    <div className="flex justify-between border-b border-neutral-warm/20 pb-2">
-                      <span className="text-muted-gray">Recipient Email</span>
-                      <span className="font-semibold">{recipientEmail}</span>
-                    </div>
-                  )}
                   <div className="flex justify-between border-b border-neutral-warm/20 pb-2">
-                    <span className="text-muted-gray">Gift Card Code</span>
-                    <span className="font-mono font-bold text-brand-red">{purchasedCode}</span>
+                    <span className="text-muted-gray">Claim Code</span>
+                    <span className="font-mono font-bold text-[#B51C20]">{purchasedCode}</span>
                   </div>
                   <div className="flex justify-between border-b border-neutral-warm/20 pb-2">
                     <span className="text-muted-gray">Card Value</span>
-                    <span className="font-semibold font-sans text-brand-red-dark">${amount.toFixed(2)}</span>
+                    <span className="font-semibold text-charcoal font-sans">${amount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between border-b border-neutral-warm/20 pb-2">
                     <span className="text-muted-gray">Delivery Method</span>
                     <span className="font-semibold uppercase">{deliveryMethod}</span>
                   </div>
-                  {purchasedCode && (
-                    <div className="flex justify-between border-b border-neutral-warm/20 pb-2 text-accent-green">
-                      <span>Points Earned</span>
-                      <span className="font-bold">+{Math.round(amount * 10)} pts</span>
-                    </div>
-                  )}
                 </div>
 
-                <div className="flex flex-col space-y-2">
-                  <Button onClick={handleResetPurchase} variant="primary" size="sm" className="w-full">
+                <div className="flex flex-col space-y-2.5">
+                  <button
+                    type="button"
+                    onClick={handlePrintCard}
+                    className="w-full py-3 rounded-xl bg-charcoal hover:bg-black text-white font-sans text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  >
+                    <Printer className="h-4 w-4" />
+                    <span>Print Gift Card Certificate (PDF)</span>
+                  </button>
+
+                  <Button onClick={handleResetPurchase} variant="outline" size="sm" className="w-full">
                     Buy Another Gift Card
                   </Button>
+
                   <Link href="/menu">
-                    <Button variant="outline" size="sm" className="w-full">
+                    <Button variant="ghost" size="sm" className="w-full text-muted-gray hover:text-charcoal">
                       Return to Menu
                     </Button>
                   </Link>
@@ -534,7 +761,6 @@ export default function GiftCardsPage() {
               </Card>
             </div>
           )}
-
         </div>
       </main>
 

@@ -137,7 +137,7 @@ export default function ReservationsPage() {
           {/* Header Text */}
           <div className="text-center max-w-xl mx-auto mb-12">
             <Badge variant="soft-red" className="mb-2">Reservations</Badge>
-            <h1 className="font-serif text-4xl md:text-5xl font-bold tracking-tight">
+            <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-charcoal">
               Book a Dining Table
             </h1>
             <p className="font-sans text-sm md:text-base text-muted-gray mt-3 leading-relaxed">

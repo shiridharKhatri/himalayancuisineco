@@ -47,26 +47,13 @@ export default function EventsPage() {
       <Header />
 
       {/* HERO SECTION */}
-      <section className="relative py-28 bg-charcoal text-center overflow-hidden border-b border-white/10 select-none">
-        <div className="absolute inset-0 z-0 opacity-30">
-          <Image
-            src="/images/story_heritage.jpg"
-            alt="Himalayan Heritage background"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/60" />
-        </div>
-
-        <div className="relative z-10 mx-auto max-w-[1400px] px-6 md:px-12">
-          <span className="font-sans text-xs md:text-sm font-bold tracking-[0.25em] uppercase text-brand-red mb-3 block">
-            Community & Celebrations
-          </span>
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight max-w-3xl mx-auto leading-tight text-cream-light">
+      <section className="relative py-16 lg:py-20 border-b border-neutral-warm/40 bg-cream-light text-center">
+        <div className="mx-auto max-w-[1400px] px-6 md:px-12">
+          <Badge variant="soft-red" className="mb-2">Community &amp; Celebrations</Badge>
+          <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-charcoal max-w-4xl mx-auto leading-snug">
             Gathering Around the Table
           </h1>
-          <p className="font-sans text-sm md:text-base text-neutral-300/90 mt-4 max-w-2xl mx-auto leading-relaxed">
+          <p className="font-sans text-sm md:text-base text-muted-gray mt-3 max-w-2xl mx-auto leading-relaxed">
             Experience culinary masterclasses, traditional Nepalese festival banquets, and seasonal cultural celebrations at Himalayan Cuisine Co.
           </p>
         </div>

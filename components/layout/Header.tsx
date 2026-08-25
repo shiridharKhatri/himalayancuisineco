@@ -42,12 +42,12 @@ export const Header: React.FC = () => {
     { label: "Catering", href: "/catering" },
     { label: "Events", href: "/events" },
     { label: "Reservations", href: "/reservations" },
+    { label: "Careers", href: "/careers" },
   ];
 
   const secondaryNavLinks = [
     { label: "Gift Cards", href: "/gift-cards" },
     { label: "Rewards", href: "/rewards" },
-    { label: "Careers", href: "/careers" },
     { label: "Contact", href: "/contact" },
   ];
 

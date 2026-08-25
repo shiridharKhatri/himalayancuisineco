@@ -4,7 +4,7 @@ import * as React from "react";
 import { Suspense } from "react";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search, SlidersHorizontal, Flame, X, ShoppingBag } from "lucide-react";
+import { Search, SlidersHorizontal, Flame, X, ShoppingBag, Heart } from "lucide-react";
 import { MENU_ITEMS, CATEGORIES } from "@/lib/data";
 import { MenuItem } from "@/types";
 import { Header } from "@/components/layout/Header";
@@ -14,6 +14,7 @@ import { MenuItemCard } from "@/components/menu/MenuItemCard";
 import { CustomizationModal } from "@/components/ordering/CustomizationModal";
 import { Badge } from "@/components/ui/Badge";
 import { CuisineLoader } from "@/components/ui/CuisineLoader";
+import { useFavoritesStore } from "@/stores/favoritesStore";
 
 function MenuContent() {
   const searchParams = useSearchParams();
@@ -27,7 +28,10 @@ function MenuContent() {
   const [selectedDiet, setSelectedDiet] = React.useState<string[]>([]);
   const [selectedSpice, setSelectedSpice] = React.useState<number | null>(null);
   const [showOnlyPopular, setShowOnlyPopular] = React.useState(false);
+  const [showOnlyFavorites, setShowOnlyFavorites] = React.useState(false);
   const [customizingItem, setCustomizingItem] = React.useState<MenuItem | null>(null);
+
+  const { itemIds: favoriteIds } = useFavoritesStore();
   
   // Mobile filters panel state
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = React.useState(false);
@@ -54,6 +58,7 @@ function MenuContent() {
     setSelectedDiet([]);
     setSelectedSpice(null);
     setShowOnlyPopular(false);
+    setShowOnlyFavorites(false);
   };
 
   // Filter menu items
@@ -89,6 +94,11 @@ function MenuContent() {
 
       // Popular filter
       if (showOnlyPopular && !item.isPopular) {
+        return false;
+      }
+
+      // Favorites filter
+      if (showOnlyFavorites && !favoriteIds.includes(item.id)) {
         return false;
       }
 
@@ -219,6 +229,20 @@ function MenuContent() {
                 type="checkbox"
                 checked={showOnlyPopular}
                 onChange={(e) => setShowOnlyPopular(e.target.checked)}
+                className="accent-brand-red h-4.5 w-4.5 cursor-pointer"
+              />
+            </div>
+
+            {/* Favorites Toggle */}
+            <div className="flex items-center justify-between">
+              <span className="font-sans text-sm text-charcoal flex items-center gap-1.5">
+                <Heart className={`h-4 w-4 ${favoriteIds.length > 0 ? "fill-brand-red text-brand-red" : "text-muted-gray"}`} />
+                My Favorites ({favoriteIds.length})
+              </span>
+              <input
+                type="checkbox"
+                checked={showOnlyFavorites}
+                onChange={(e) => setShowOnlyFavorites(e.target.checked)}
                 className="accent-brand-red h-4.5 w-4.5 cursor-pointer"
               />
             </div>

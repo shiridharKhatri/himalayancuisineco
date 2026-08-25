@@ -99,7 +99,14 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, side = "
             </div>
 
             {/* Content */}
-            <div className={`flex-1 overflow-y-auto ${noPadding ? "" : "p-6"}`}>{children}</div>
+            <div
+              className={`flex-1 overflow-y-auto overscroll-contain ${noPadding ? "" : "p-6"}`}
+              data-lenis-prevent="true"
+              data-lenis-prevent-wheel="true"
+              data-lenis-prevent-touch="true"
+            >
+              {children}
+            </div>
 
             {/* Pinned Footer */}
             {footer && (

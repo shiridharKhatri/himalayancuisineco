@@ -37,13 +37,13 @@ export default function OurStoryPage() {
       <Header />
 
       {/* HERO SECTION */}
-      <section className="relative py-20 lg:py-24 border-b border-neutral-warm/40 bg-cream-light text-center">
+      <section className="relative py-16 lg:py-20 border-b border-neutral-warm/40 bg-cream-light text-center">
         <div className="mx-auto max-w-[1400px] px-6 md:px-12">
           <Badge variant="soft-red" className="mb-2">Our History</Badge>
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight max-w-3xl mx-auto leading-tight">
+          <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-charcoal max-w-4xl mx-auto leading-snug">
             From the Himalayas to Your Table
           </h1>
-          <p className="font-sans text-sm md:text-base text-muted-gray mt-4 max-w-2xl mx-auto leading-relaxed">
+          <p className="font-sans text-sm md:text-base text-muted-gray mt-3 max-w-2xl mx-auto leading-relaxed">
             Discover the heritage, recipes, and culinary passion that shape our premium Nepalese dining experience.
           </p>
         </div>
