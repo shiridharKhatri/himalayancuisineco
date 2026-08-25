@@ -173,24 +173,34 @@ export const Header: React.FC = () => {
               <div className={`w-px h-5 mx-1.5 ${isTransparent ? "bg-white/20" : "bg-neutral-warm/40"}`} />
 
               {session ? (
-                <Link
-                  href="/account"
-                  className={`flex items-center p-1 rounded-full transition-all duration-200 cursor-pointer ${
-                    isTransparent
-                      ? "hover:bg-white/10"
-                      : "hover:bg-cream-dark/60"
-                  }`}
-                  aria-label="Manage customer account"
-                >
-                  <div className="rounded-full overflow-hidden shrink-0 border border-neutral-warm/30 flex items-center justify-center">
-                    <Avatar
-                      size={28}
-                      name={session.user?.name || session.user?.email || "Member"}
-                      variant="beam"
-                      colors={["#C9252D", "#991D24", "#F4D9D8", "#ECE7DF", "#151515"]}
-                    />
-                  </div>
-                </Link>
+                <div className="flex items-center gap-1.5">
+                  {(session.user as any)?.role === "ADMIN" && (
+                    <Link
+                      href="/admin"
+                      className="px-2.5 py-1 rounded-md text-[11px] font-mono font-bold bg-[#B51C20] text-white hover:bg-[#991519] transition-colors"
+                    >
+                      ADMIN
+                    </Link>
+                  )}
+                  <Link
+                    href="/account"
+                    className={`flex items-center p-1 rounded-full transition-all duration-200 cursor-pointer ${
+                      isTransparent
+                        ? "hover:bg-white/10"
+                        : "hover:bg-cream-dark/60"
+                    }`}
+                    aria-label="Manage customer account"
+                  >
+                    <div className="rounded-full overflow-hidden shrink-0 border border-neutral-warm/30 flex items-center justify-center">
+                      <Avatar
+                        size={28}
+                        name={session.user?.name || session.user?.email || "Member"}
+                        variant="beam"
+                        colors={["#C9252D", "#991D24", "#F4D9D8", "#ECE7DF", "#151515"]}
+                      />
+                    </div>
+                  </Link>
+                </div>
               ) : (
                 <Link
                   href="/sign-in"

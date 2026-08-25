@@ -11,7 +11,21 @@ const providers: any[] = [
       password: { label: "Password", type: "password" }
     },
     async authorize(credentials) {
-      // Mock credentials validation mapping to our database seeded user
+      // Admin credentials validation
+      if (
+        (credentials?.email === "admin@himalayan.com" && credentials?.password === "adminpassword") ||
+        (credentials?.email === "admin@himalayancuisineco.com" && credentials?.password === "admin123") ||
+        (credentials?.email === "admin@himalayancuisineco.com" && credentials?.password === "adminpassword")
+      ) {
+        return {
+          id: "u-admin",
+          name: "Tashi Sherpa (Admin)",
+          email: credentials.email,
+          role: "ADMIN",
+        };
+      }
+
+      // Customer credentials validation
       if (
         credentials?.email === "customer@himalayan.com" &&
         credentials?.password === "customerpassword"
