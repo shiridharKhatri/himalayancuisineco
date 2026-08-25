@@ -16,6 +16,7 @@ import { MenuItemCard } from "@/components/menu/MenuItemCard";
 import { CustomizationModal } from "@/components/ordering/CustomizationModal";
 import { CartDrawer } from "@/components/ordering/CartDrawer";
 import { VideoHero } from "@/components/home/VideoHero";
+import { Testimonials } from "@/components/ui/Testimonials";
 
 export default function HomePage() {
   const [customizingItem, setCustomizingItem] = React.useState<MenuItem | null>(null);
@@ -256,28 +257,12 @@ export default function HomePage() {
           <Badge variant="soft-red" className="mb-3">
             Guest Testimonials
           </Badge>
-          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-charcoal mb-16 tracking-tight">
+          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-charcoal mb-10 tracking-tight">
             Loved by Our Guests
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left max-w-5xl mx-auto">
-            {MOCK_REVIEWS.map((rev) => (
-              <Card key={rev.id} className="flex flex-col justify-between">
-                <CardContent className="p-0">
-                  <div className="flex items-center space-x-0.5 text-brand-red mb-4">
-                    {Array.from({ length: rev.rating }).map((_, i) => (
-                      <Star key={i} className="h-4.5 w-4.5 fill-current" />
-                    ))}
-                  </div>
-                  <p className="font-sans text-sm text-charcoal italic leading-relaxed mb-6">
-                    "{rev.comment}"
-                  </p>
-                </CardContent>
-                <div className="font-sans text-xs font-semibold uppercase tracking-wider text-muted-gray">
-                  &mdash; {rev.customerName}
-                </div>
-              </Card>
-            ))}
+          <div className="max-w-4xl mx-auto">
+            <Testimonials />
           </div>
         </div>
       </section>
