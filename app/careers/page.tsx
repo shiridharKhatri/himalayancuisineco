@@ -8,11 +8,6 @@ import {
   DollarSign,
   CheckCircle2,
   User,
-  TrendingUp,
-  HeartPulse,
-  Flame,
-  UtensilsCrossed,
-  Sparkles,
   UploadCloud,
   FileText,
   Trash2,
@@ -117,81 +112,20 @@ export default function CareersPage() {
     }
   };
 
-  const benefits = [
-    {
-      icon: <TrendingUp className="h-6 w-6 text-[#B51C20]" />,
-      tag: "Top Industry Wages",
-      title: "Competitive Pay & Tips",
-      desc: "High baseline wages, reliable scheduling, and transparent kitchen tip-pool sharing on every shift.",
-    },
-    {
-      icon: <HeartPulse className="h-6 w-6 text-[#B51C20]" />,
-      tag: "Full-Time Coverage",
-      title: "Comprehensive Health",
-      desc: "Medical, vision, and dental insurance package options for all full-time culinary and service team members.",
-    },
-    {
-      icon: <Flame className="h-6 w-6 text-[#B51C20]" />,
-      tag: "Mastery & Growth",
-      title: "Culinary Mentorship",
-      desc: "Hands-on training in Himalayan wood-fired cooking, mountain spice blending, and traditional momo craftsmanship.",
-    },
-    {
-      icon: <UtensilsCrossed className="h-6 w-6 text-[#B51C20]" />,
-      tag: "Daily Staff Dining",
-      title: "Meals & Generous Discounts",
-      desc: "Free authentic shift meals, unlimited chai, and 50% family dining discounts across dine-in, takeout, and catering.",
-    },
-  ];
-
   return (
     <div className="flex flex-col min-h-screen bg-cream-base text-charcoal">
       <Header />
 
-      {/* HERO & PERKS SECTION */}
+      {/* HERO SECTION */}
       <section className="relative py-16 lg:py-20 border-b border-neutral-warm/40 bg-cream-light text-center">
         <div className="mx-auto max-w-[1320px] px-6 md:px-12">
           <Badge variant="soft-red" className="mb-2">Careers &amp; Culture</Badge>
           <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-charcoal max-w-4xl mx-auto leading-snug">
             Join Our Culinary Team
           </h1>
-          <p className="font-sans text-sm md:text-base text-muted-gray mt-3 max-w-2xl mx-auto leading-relaxed mb-12">
+          <p className="font-sans text-sm md:text-base text-muted-gray mt-3 max-w-2xl mx-auto leading-relaxed">
             Help us share the warm spirit of Himalayan hospitality and Nepalese heritage. We invest deeply in our team with top wages, culinary mastery, and comprehensive benefits.
           </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
-            {benefits.map((b) => (
-              <div
-                key={b.title}
-                className="flex flex-col justify-between p-6 sm:p-7 rounded-2xl bg-white border border-neutral-warm/70 shadow-xs hover:border-charcoal/30 hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300"
-              >
-                <div>
-                  {/* Icon Container */}
-                  <div className="w-12 h-12 rounded-xl bg-[#B51C20]/10 flex items-center justify-center mb-5">
-                    {b.icon}
-                  </div>
-
-                  {/* Benefit Tag */}
-                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-[#FCFBF8] border border-neutral-warm/60 font-sans text-[10px] font-bold uppercase tracking-wider text-charcoal/80 mb-2.5">
-                    {b.tag}
-                  </span>
-
-                  <h3 className="font-serif text-lg font-bold text-charcoal leading-snug mb-2">
-                    {b.title}
-                  </h3>
-
-                  <p className="font-sans text-xs sm:text-sm text-muted-gray leading-relaxed">
-                    {b.desc}
-                  </p>
-                </div>
-
-                <div className="pt-4 mt-4 border-t border-neutral-warm/30 flex items-center text-[11px] font-sans font-semibold text-[#B51C20]">
-                  <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 shrink-0" />
-                  <span>Guaranteed perk</span>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
