@@ -53,7 +53,7 @@ export const VideoHero: React.FC = () => {
       // 2. Synchronize floating text fades to only show when the dish bowl has settled in frame (2s intervals)
       // Transition periods (1s - 2s, 3s - 4s, 5s - 6s, 7s - 8s) are kept clean and free of text overlays.
       const timings = [
-        { enterStart: 0.0, enterEnd: 0.0, exitStart: 0.7, exitEnd: 1.0 }, // Jhol Momo (stationary 0s - 1s)
+        { enterStart: 0.0, enterEnd: 0.0, exitStart: 0.2, exitEnd: 0.5 }, // Jhol Momo (fades out early as bowl rises)
         { enterStart: 1.7, enterEnd: 2.0, exitStart: 2.7, exitEnd: 3.0 }, // Fried Momo (stationary 2s - 3s)
         { enterStart: 3.7, enterEnd: 4.0, exitStart: 4.7, exitEnd: 5.0 }, // Tandoori Chicken (stationary 4s - 5s)
         { enterStart: 5.7, enterEnd: 6.0, exitStart: 6.7, exitEnd: 7.0 }, // Biryani (stationary 6s - 7s)
