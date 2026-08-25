@@ -48,7 +48,7 @@ export const Header: React.FC = () => {
     <>
       <header
         className={`sticky top-0 z-40 w-full bg-cream-light transition-all duration-300 border-b border-neutral-warm/40 ${
-          isScrolled ? "py-3 shadow-[0_4px_16px_rgba(21,21,21,0.02)]" : "py-5"
+          isScrolled ? "py-3.5 shadow-[0_4px_16px_rgba(21,21,21,0.02)]" : "py-3.5"
         }`}
       >
         <div className="mx-auto max-w-[1400px] px-6 md:px-12 flex items-center justify-between">

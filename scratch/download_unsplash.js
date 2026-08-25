@@ -9,12 +9,12 @@ const unsplashAssets = [
   { name: 'momo.jpg', id: 'photo-1563245372-f21724e3856d' },
   { name: 'dal_bhat.jpg', id: 'photo-1626777552726-4a6b54c97e46' },
   { name: 'thukpa.jpg', id: 'photo-1569718212165-3a8278d5f624' },
-  { name: 'choila.jpg', id: 'photo-1601050690597-df056fb4ce78' },
-  { name: 'kheer.jpg', id: 'photo-1588741176018-ac14a138430f' },
+  { name: 'choila.jpg', id: 'photo-1589301760014-d929f3979dbc' },
+  { name: 'kheer.jpg', id: 'photo-1517244681291-03973d63c252' },
   { name: 'lassi.jpg', id: 'photo-1553530666-ba11a7da3888' },
   
   // Marketing & Layouts
-  { name: 'story_heritage.jpg', id: 'photo-1596790011460-0fb5dfd05dcf' },
+  { name: 'story_heritage.jpg', id: 'photo-1599940824399-b87987ceb72a' },
   { name: 'chef_tashi.jpg', id: 'photo-1577219491135-ce391730fb2c' },
   { name: 'chef_mingma.jpg', id: 'photo-1583394838336-acd977736f90' },
   { name: 'event_dashain.jpg', id: 'photo-1546833999-b9f581a1996d' },

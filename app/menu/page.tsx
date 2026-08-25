@@ -168,7 +168,7 @@ function MenuContent() {
       </section>
 
       {/* STICKY CATEGORIES BAR */}
-      <div className="sticky top-[69px] md:top-[85px] z-30 w-full bg-cream-light border-b border-neutral-warm/40 shadow-[0_4px_16px_rgba(21,21,21,0.01)]">
+      <div className="sticky top-[68px] md:top-[76px] z-30 w-full bg-cream-light border-b border-neutral-warm/40 shadow-[0_4px_16px_rgba(21,21,21,0.01)]">
         <div className="mx-auto max-w-[1400px] px-6 md:px-12">
           <div className="flex items-center space-x-1.5 overflow-x-auto py-3.5 no-scrollbar scroll-smooth">
             <button
