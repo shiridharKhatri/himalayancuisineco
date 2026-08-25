@@ -3,29 +3,24 @@
 import * as React from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { CanvasSequence, CanvasSequenceRef } from "./CanvasSequence";
 
 export const VideoHero: React.FC = () => {
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const canvasRef = React.useRef<CanvasSequenceRef>(null);
   const textRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+
+  const totalFrames = 240;
+  const startFrame = 10; // Start at frame 10 (~0.4s) to bypass initial autofocus blur
+  const endFrame = 236;  // End at frame 236 (~9.8s) before any final frame transition
 
   React.useEffect(() => {
     // Register ScrollTrigger plugin
     gsap.registerPlugin(ScrollTrigger);
 
-    const video = videoRef.current;
-    if (!video || !containerRef.current) return;
+    if (!containerRef.current) return;
 
-    // Ensure standard configuration
-    video.removeAttribute("controls");
-    video.muted = true;
-    video.playsInline = true;
-    video.pause();
-
-    // Start at 0.4s to skip the initial blurry lens focus frame, and end at 9.8s
-    const startPlayhead = 0.4;
-    const endPlayhead = 9.8;
-    const videoProxy = { currentTime: startPlayhead };
+    const frameObj = { index: startFrame };
 
     // GSAP context helps with clean state reversion on component unmount
     const ctx = gsap.context(() => {
@@ -34,17 +29,25 @@ export const VideoHero: React.FC = () => {
           trigger: containerRef.current,
           start: "top top",
           end: "bottom bottom",
-          scrub: 1.5, // Smooth lag/momentum buffer
+          scrub: 0.5, // Butter-smooth canvas frame transitions
         },
       });
 
-      // 1. Scrub proxy playhead position linearly across scrollable distance
-      // Explicitly define duration to 10 to match the text timeline scale
-      tl.to(videoProxy, {
-        currentTime: endPlayhead,
-        ease: "none",
-        duration: 10,
-      }, 0);
+      // 1. Scrub Canvas Frames sequence across scroll distance
+      tl.to(
+        frameObj,
+        {
+          index: endFrame,
+          ease: "none",
+          duration: 10, // Match the timeline scale
+          onUpdate: () => {
+            if (canvasRef.current) {
+              canvasRef.current.drawFrame(Math.round(frameObj.index));
+            }
+          },
+        },
+        0
+      );
 
       // 2. Synchronize floating text fades relative to the video duration
       const timings = [
@@ -103,25 +106,7 @@ export const VideoHero: React.FC = () => {
       });
     }, containerRef);
 
-    let renderId: number;
-    const updatePlayhead = () => {
-      if (video) {
-        if (!video.paused) {
-          video.pause();
-        }
-        if (!video.seeking) {
-          const diff = Math.abs(video.currentTime - videoProxy.currentTime);
-          if (diff > 0.03) {
-            video.currentTime = videoProxy.currentTime;
-          }
-        }
-      }
-      renderId = requestAnimationFrame(updatePlayhead);
-    };
-    renderId = requestAnimationFrame(updatePlayhead);
-
     return () => {
-      cancelAnimationFrame(renderId);
       ctx.revert();
     };
   }, []);
@@ -158,14 +143,10 @@ export const VideoHero: React.FC = () => {
     <div ref={containerRef} className="relative w-full h-[1200vh] bg-charcoal">
       <div className="sticky top-0 left-0 w-full h-screen overflow-hidden bg-black select-none">
         
-        {/* Covering Background Video */}
-        <video
-          ref={videoRef}
-          src="/Herosection.mp4"
-          muted
-          playsInline
-          preload="auto"
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        {/* Covering Canvas Sequence */}
+        <CanvasSequence
+          ref={canvasRef}
+          totalFrames={totalFrames}
         />
 
         {/* Ambient Overlay for Visual Contrast */}
