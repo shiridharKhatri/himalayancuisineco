@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, MapPin, Clock, Star, Phone } from "lucide-react";
+import { ArrowRight, MapPin, Clock, Star, Phone, ShoppingBag, CalendarDays, ChefHat, Gift } from "lucide-react";
 import { MENU_ITEMS, CATEGORIES, MOCK_REVIEWS } from "@/lib/data";
 import { MenuItem } from "@/types";
 import { Header } from "@/components/layout/Header";
@@ -29,24 +29,28 @@ export default function HomePage() {
       description: "Get fresh hot Himalayan dishes delivered or ready for pickup.",
       cta: "Order Now",
       href: "/menu",
+      icon: ShoppingBag,
     },
     {
       title: "Reserve a Table",
       description: "Book your dining experience in our warm, traditional dining room.",
       cta: "Book Reservation",
       href: "/reservations",
+      icon: CalendarDays,
     },
     {
       title: "Custom Catering",
       description: "Bring authentic mountain flavors and momo platters to your event.",
       cta: "Request Quote",
       href: "/catering",
+      icon: ChefHat,
     },
     {
       title: "Gift Cards",
       description: "Give the gift of Himalayan hospitality to friends and family.",
       cta: "Buy Gift Card",
       href: "/gift-cards",
+      icon: Gift,
     },
   ];
 
@@ -61,22 +65,32 @@ export default function HomePage() {
       <section className="py-16 md:py-20 border-b border-neutral-warm/40 bg-cream-light">
         <div className="mx-auto max-w-[1400px] px-6 md:px-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {quickActions.map((action) => (
-              <Card key={action.title} hoverable className="flex flex-col h-full justify-between">
-                <CardContent className="p-0">
-                  <h3 className="font-serif text-xl font-bold text-charcoal mb-2">
-                    {action.title}
-                  </h3>
-                  <p className="font-sans text-sm text-muted-gray mb-6 leading-relaxed">
-                    {action.description}
-                  </p>
-                </CardContent>
-                <Link href={action.href} className="inline-flex items-center text-sm font-semibold tracking-wider uppercase text-brand-red hover:text-brand-red-dark group/btn cursor-pointer">
-                  <span>{action.cta}</span>
-                  <ArrowRight className="ml-1.5 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <Link
+                  key={action.title}
+                  href={action.href}
+                  className="group relative flex flex-col justify-between p-8 rounded-[16px] bg-cream-light border border-neutral-warm/40 shadow-[0_4px_24px_rgba(0,0,0,0.01)] hover:-translate-y-1.5 hover:shadow-[0_16px_40px_rgba(21,21,21,0.04)] hover:border-brand-red/35 transition-all duration-300 cursor-pointer h-full text-left"
+                >
+                  <div className="flex flex-col">
+                    <div className="w-12 h-12 rounded-full bg-brand-red/5 flex items-center justify-center text-brand-red mb-6 group-hover:bg-brand-red group-hover:text-cream-light transition-all duration-300">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="font-serif text-2xl font-bold text-charcoal mb-3 group-hover:text-brand-red transition-colors">
+                      {action.title}
+                    </h3>
+                    <p className="font-sans text-sm text-muted-gray/95 leading-relaxed mb-6">
+                      {action.description}
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center text-xs font-bold tracking-widest uppercase text-brand-red transition-colors group-hover:text-brand-red-dark">
+                    <span>{action.cta}</span>
+                    <ArrowRight className="ml-2 h-3.5 w-3.5 transition-transform group-hover:translate-x-1.5" />
+                  </span>
                 </Link>
-              </Card>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
