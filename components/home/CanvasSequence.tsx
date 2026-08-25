@@ -17,6 +17,14 @@ export const CanvasSequence = React.forwardRef<CanvasSequenceRef, CanvasSequence
     const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
     const imagesRef = React.useRef<HTMLImageElement[]>([]);
     const lastFrameIndex = React.useRef<number>(0);
+    const onProgressRef = React.useRef(onProgress);
+    const onCompleteRef = React.useRef(onComplete);
+
+    React.useEffect(() => {
+      onProgressRef.current = onProgress;
+      onCompleteRef.current = onComplete;
+    });
+
     const [isLoaded, setIsLoaded] = React.useState(false);
 
     // Preload image sequence
@@ -26,13 +34,13 @@ export const CanvasSequence = React.forwardRef<CanvasSequenceRef, CanvasSequence
 
       const checkCompletion = () => {
         loadedCount++;
-        if (onProgress) {
-          onProgress(loadedCount / totalFrames);
+        if (onProgressRef.current) {
+          onProgressRef.current(loadedCount / totalFrames);
         }
         if (loadedCount === totalFrames) {
           setIsLoaded(true);
-          if (onComplete) {
-            onComplete();
+          if (onCompleteRef.current) {
+            onCompleteRef.current();
           }
         }
       };
@@ -47,7 +55,7 @@ export const CanvasSequence = React.forwardRef<CanvasSequenceRef, CanvasSequence
       }
 
       imagesRef.current = images;
-    }, [totalFrames, onProgress, onComplete]);
+    }, [totalFrames]);
 
     // Draw frame onto the canvas (covers viewport and handles DPR)
     const draw = (index: number, force = false) => {
