@@ -12,12 +12,6 @@ import {
   Printer,
   UploadCloud,
   Trash2,
-  Sparkles,
-  Heart,
-  PartyPopper,
-  Snowflake,
-  Crown,
-  Image as ImageIcon,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -306,15 +300,15 @@ export default function GiftCardsPage() {
   const getStyleHeading = () => {
     switch (style) {
       case "birthday":
-        return "🎉 Happy Birthday";
+        return "Happy Birthday";
       case "thank-you":
-        return "✨ With Warmest Thanks";
+        return "With Warmest Thanks";
       case "holiday":
-        return "❄️ Season's Greetings";
+        return "Season's Greetings";
       case "custom":
-        return "🎁 Special Himalayan Feast";
+        return "Special Himalayan Feast";
       default:
-        return "🏔️ Himalayan Heritage";
+        return "Himalayan Heritage";
     }
   };
 
@@ -348,24 +342,23 @@ export default function GiftCardsPage() {
                     {/* 5 Distinct Themes: Birthday, Thanks, Holiday, Classic, Custom */}
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                       {[
-                        { id: "birthday", label: "Birthday", icon: <PartyPopper className="h-4 w-4 text-brand-red" /> },
-                        { id: "thank-you", label: "Thanks", icon: <Heart className="h-4 w-4 text-amber-600" /> },
-                        { id: "holiday", label: "Holiday", icon: <Snowflake className="h-4 w-4 text-emerald-600" /> },
-                        { id: "classic", label: "Classic", icon: <Crown className="h-4 w-4 text-amber-500" /> },
-                        { id: "custom", label: "Custom", icon: <ImageIcon className="h-4 w-4 text-blue-600" /> },
+                        { id: "birthday", label: "Birthday" },
+                        { id: "thank-you", label: "Thanks" },
+                        { id: "holiday", label: "Holiday" },
+                        { id: "classic", label: "Classic" },
+                        { id: "custom", label: "Custom" },
                       ].map((item) => (
                         <button
                           key={item.id}
                           type="button"
                           onClick={() => setStyle(item.id as any)}
-                          className={`py-3 px-2 border rounded-xl font-sans text-xs font-semibold tracking-wide flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                          className={`py-3 px-2 border rounded-xl font-sans text-xs font-semibold tracking-wide text-center transition-all cursor-pointer ${
                             style === item.id
                               ? "border-[#B51C20] bg-[#B51C20]/10 text-[#B51C20] shadow-xs ring-1 ring-[#B51C20]"
                               : "border-neutral-warm/80 bg-cream-light text-charcoal hover:bg-cream-dark"
                           }`}
                         >
-                          {item.icon}
-                          <span>{item.label}</span>
+                          {item.label}
                         </button>
                       ))}
                     </div>
