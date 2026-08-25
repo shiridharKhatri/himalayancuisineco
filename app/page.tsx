@@ -15,6 +15,7 @@ import { Carousel } from "@/components/ui/Carousel";
 import { MenuItemCard } from "@/components/menu/MenuItemCard";
 import { CustomizationModal } from "@/components/ordering/CustomizationModal";
 import { CartDrawer } from "@/components/ordering/CartDrawer";
+import { VideoHero } from "@/components/home/VideoHero";
 
 export default function HomePage() {
   const [customizingItem, setCustomizingItem] = React.useState<MenuItem | null>(null);
@@ -54,60 +55,7 @@ export default function HomePage() {
       <Header />
 
       {/* HERO SECTION */}
-      <section className="relative overflow-hidden py-20 lg:py-28 border-b border-neutral-warm/40">
-        <div className="mx-auto max-w-[1400px] px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          
-          {/* Hero Copy */}
-          <div className="lg:col-span-6 flex flex-col space-y-6 text-left">
-            <Badge variant="soft-red" className="w-fit">
-              Premium Himalayan Dining
-            </Badge>
-            <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-charcoal leading-none">
-              Where Himalayan Tradition Meets Every Bite.
-            </h1>
-            <p className="font-sans text-base md:text-lg text-muted-gray max-w-xl leading-relaxed">
-              Discover handcrafted Nepalese flavors, traditional recipes passed down through generations, and the warm, welcoming spirit of Himalayan hospitality.
-            </p>
-            <div className="flex flex-wrap gap-4 pt-2">
-              <Link href="/menu">
-                <Button variant="primary" size="lg">
-                  Order Online
-                </Button>
-              </Link>
-              <Link href="/reservations">
-                <Button variant="secondary" size="lg">
-                  Reserve a Table
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          {/* Hero Image Collage */}
-          <div className="lg:col-span-6 flex items-center justify-center relative">
-            <div className="relative w-full max-w-md md:max-w-lg aspect-[4/3] rounded-[28px] overflow-hidden border border-neutral-warm/60 shadow-[0_8px_30px_rgba(21,21,21,0.04)] bg-cream-dark">
-              <Image
-                src="/images/momo.jpg"
-                alt="Signature Jhol Momo submerged in cold sesame-tomato soup"
-                fill
-                priority
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 500px"
-              />
-            </div>
-            
-            {/* Soft decorative badge */}
-            <div className="absolute -bottom-6 -left-6 hidden md:block bg-cream-light border border-neutral-warm p-4 rounded-sm shadow-[0_4px_16px_rgba(21,21,21,0.03)] text-left max-w-[180px]">
-              <span className="font-serif text-xs font-bold text-brand-red uppercase tracking-wider block mb-1">
-                Artisanal Momo
-              </span>
-              <p className="font-sans text-[11px] text-muted-gray leading-normal">
-                100% hand-folded dumpling wraps with roasted organic Himalayan spices.
-              </p>
-            </div>
-          </div>
-
-        </div>
-      </section>
+      <VideoHero />
 
       {/* QUICK ACTIONS SECTION */}
       <section className="py-16 md:py-20 border-b border-neutral-warm/40 bg-cream-light">
