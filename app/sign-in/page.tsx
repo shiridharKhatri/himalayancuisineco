@@ -189,9 +189,13 @@ function SignInPageContent() {
     setIsLoading(false);
 
     if (result?.error) {
-      setError("Invalid email or password. Try admin@himalayan.com / adminpassword or customer@himalayan.com / customerpassword");
+      setError("Invalid email or password.");
     } else if (result?.ok) {
-      router.push(callbackUrl);
+      if (email.startsWith("admin@") || callbackUrl.startsWith("/admin")) {
+        router.push("/admin");
+      } else {
+        router.push(callbackUrl);
+      }
     }
   };
 
@@ -551,33 +555,11 @@ function SignInPageContent() {
                     </Button>
 
                     {mode === "signin" && (
-                      <div className="pt-2 border-t border-neutral-warm/40 space-y-2">
-                        <span className="font-sans text-[10px] uppercase font-bold text-muted-gray block text-center">
-                          Quick Demo Access:
+                      <p className="text-center font-sans text-xs text-muted-gray">
+                        <span className="text-brand-red font-medium cursor-pointer hover:underline">
+                          Forgot password?
                         </span>
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEmail("customer@himalayan.com");
-                              setPassword("customerpassword");
-                            }}
-                            className="py-1.5 px-2 rounded-lg bg-cream-dark/60 border border-neutral-warm text-[11px] font-medium text-charcoal hover:bg-cream-dark transition-colors cursor-pointer"
-                          >
-                            👤 Customer Demo
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEmail("admin@himalayan.com");
-                              setPassword("adminpassword");
-                            }}
-                            className="py-1.5 px-2 rounded-lg bg-[#B51C20]/10 border border-[#B51C20]/30 text-[11px] font-bold text-[#B51C20] hover:bg-[#B51C20]/20 transition-colors cursor-pointer"
-                          >
-                            🛡️ Master Admin
-                          </button>
-                        </div>
-                      </div>
+                      </p>
                     )}
                   </form>
                 )}

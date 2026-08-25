@@ -328,18 +328,27 @@ export default function AccountPage() {
                 </h1>
               </div>
             </div>
-            <Button
-              onClick={() => {
-                signOut({ callbackUrl: "/" });
-                addToast("Logged out successfully.", "info");
-              }}
-              variant="outline"
-              size="sm"
-              className="flex items-center space-x-1.5 shrink-0"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Sign Out</span>
-            </Button>
+            <div className="flex items-center gap-3 shrink-0">
+              {(session?.user as any)?.role === "ADMIN" && (
+                <Link href="/admin">
+                  <Button variant="primary" size="sm" className="bg-[#B51C20] hover:bg-[#991519]">
+                    Go to Admin Control Panel &rarr;
+                  </Button>
+                </Link>
+              )}
+              <Button
+                onClick={() => {
+                  signOut({ callbackUrl: "/" });
+                  addToast("Logged out successfully.", "info");
+                }}
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-1.5"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out</span>
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
