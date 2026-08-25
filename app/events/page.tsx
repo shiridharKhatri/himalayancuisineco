@@ -2,11 +2,11 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Calendar, MapPin, Clock, Ticket } from "lucide-react";
+import Link from "next/link";
+import { Calendar, MapPin, Ticket } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Dialog } from "@/components/ui/Dialog";
 import { useUIStore } from "@/stores/uiStore";
@@ -46,82 +46,128 @@ export default function EventsPage() {
     <div className="flex flex-col min-h-screen bg-cream-base text-charcoal">
       <Header />
 
-      {/* HERO */}
-      <section className="relative py-20 lg:py-24 border-b border-neutral-warm/40 bg-cream-light text-center">
-        <div className="mx-auto max-w-[1400px] px-6 md:px-12">
-          <Badge variant="soft-red" className="mb-2">Community Events</Badge>
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight max-w-3xl mx-auto leading-tight">
-            Upcoming Himalayan Events
+      {/* HERO SECTION */}
+      <section className="relative py-28 bg-charcoal text-center overflow-hidden border-b border-white/10 select-none">
+        <div className="absolute inset-0 z-0 opacity-30">
+          <Image
+            src="/images/story_heritage.jpg"
+            alt="Himalayan Heritage background"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-black/60" />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-[1400px] px-6 md:px-12">
+          <span className="font-sans text-xs md:text-sm font-bold tracking-[0.25em] uppercase text-brand-red mb-3 block">
+            Community & Celebrations
+          </span>
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight max-w-3xl mx-auto leading-tight text-cream-light">
+            Gathering Around the Table
           </h1>
-          <p className="font-sans text-sm md:text-base text-muted-gray mt-4 max-w-2xl mx-auto leading-relaxed">
-            Join our festival banquets, cooking masterclasses, and cultural celebrations celebrating Nepalese culinary traditions.
+          <p className="font-sans text-sm md:text-base text-neutral-300/90 mt-4 max-w-2xl mx-auto leading-relaxed">
+            Experience culinary masterclasses, traditional Nepalese festival banquets, and seasonal cultural celebrations at Himalayan Cuisine Co.
           </p>
         </div>
       </section>
 
       {/* EVENTS CATALOG LIST */}
-      <section className="py-20 md:py-24">
-        <div className="mx-auto max-w-[900px] px-6">
-          <div className="space-y-12">
+      <section className="py-20 md:py-28 bg-cream-base">
+        <div className="mx-auto max-w-[1200px] px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {MOCK_EVENTS.map((evt) => (
-              <Card key={evt.id} padded={false} className="border border-neutral-warm overflow-hidden text-left flex flex-col md:flex-row items-stretch">
-                
-                {/* Visual Image cover */}
-                <div className="relative aspect-[4/3] md:aspect-auto md:w-1/3 min-h-[220px] bg-cream-dark">
-                  <Image
-                    src={getEventCoverImage(evt.id)}
-                    alt={evt.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 300px"
-                  />
-                </div>
-
-                {/* Event Info Details */}
-                <div className="flex-1 p-6 md:p-8 flex flex-col justify-between">
-                  <div className="space-y-3">
-                    <span className="font-sans text-[10px] uppercase font-bold tracking-wider text-brand-red bg-brand-red-soft/30 px-2 py-0.5 rounded-sm">
+              <div
+                key={evt.id}
+                className="group flex flex-col bg-cream-light border border-neutral-warm/40 rounded-[20px] overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.01)] hover:-translate-y-1.5 hover:shadow-[0_16px_40px_rgba(21,21,21,0.04)] hover:border-brand-red/30 transition-all duration-300 justify-between"
+              >
+                <div>
+                  {/* Cover Image Container */}
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-cream-dark border-b border-neutral-warm/20">
+                    <Image
+                      src={getEventCoverImage(evt.id)}
+                      alt={evt.title}
+                      fill
+                      className="object-cover scale-100 group-hover:scale-105 transition-transform duration-700"
+                      sizes="(max-width: 768px) 100vw, 550px"
+                    />
+                    {/* Floating Type Badge */}
+                    <span className="absolute top-4 left-4 font-sans text-[10px] uppercase font-bold tracking-widest text-cream-light bg-brand-red px-3 py-1.5 rounded-full shadow-md z-10">
                       {evt.type}
                     </span>
-                    <h3 className="font-serif text-2xl font-bold text-charcoal leading-tight">
-                      {evt.title}
-                    </h3>
-
-                    <div className="flex flex-col space-y-1.5 font-sans text-xs text-muted-gray pt-1">
-                      <div className="flex items-center space-x-2">
-                        <Calendar className="h-4 w-4 text-brand-red shrink-0" />
-                        <span>{evt.schedule}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="h-4 w-4 text-brand-red shrink-0" />
-                        <span>{evt.location}</span>
-                      </div>
-                    </div>
-
-                    <p className="font-sans text-xs md:text-sm text-muted-gray leading-relaxed pt-2">
-                      {evt.description}
-                    </p>
                   </div>
 
-                  <div className="pt-6 border-t border-neutral-warm/30 mt-6 flex justify-between items-center">
-                    <span className="font-sans text-xs text-brand-red font-bold">
-                      Limited seats available
-                    </span>
-                    <Button
-                      onClick={() => setBookingEvent(evt)}
-                      variant="primary"
-                      size="sm"
-                      className="flex items-center"
-                    >
-                      <Ticket className="mr-1.5 h-4 w-4" />
-                      Book Seats
-                    </Button>
+                  {/* Event Details */}
+                  <div className="p-8">
+                    <h3 className="font-serif text-2xl font-bold text-charcoal leading-tight mb-4 group-hover:text-brand-red transition-colors duration-300">
+                      {evt.title}
+                    </h3>
+                    <p className="font-sans text-sm text-muted-gray leading-relaxed mb-6">
+                      {evt.description}
+                    </p>
+                    
+                    <div className="flex flex-col space-y-2.5 font-sans text-xs text-muted-gray pt-4 border-t border-neutral-warm/20">
+                      <div className="flex items-center space-x-2.5">
+                        <Calendar className="h-4.5 w-4.5 text-brand-red shrink-0" />
+                        <span className="font-semibold">{evt.schedule}</span>
+                      </div>
+                      <div className="flex items-center space-x-2.5">
+                        <MapPin className="h-4.5 w-4.5 text-brand-red shrink-0" />
+                        <span className="font-semibold">{evt.location}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-              </Card>
+                {/* Footer Actions */}
+                <div className="px-8 pb-8 pt-4 border-t border-neutral-warm/20 flex justify-between items-center bg-cream-light/60">
+                  <span className="font-sans text-[10px] text-brand-red font-bold uppercase tracking-wider">
+                    Limited Seats Remaining
+                  </span>
+                  <Button
+                    onClick={() => setBookingEvent(evt)}
+                    variant="primary"
+                    size="sm"
+                    className="flex items-center gap-1.5 cursor-pointer rounded-full"
+                  >
+                    <Ticket className="h-4 w-4" />
+                    Book Seats
+                  </Button>
+                </div>
+              </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* PRIVATE GATHERINGS CTA */}
+      <section className="relative py-24 bg-charcoal text-cream-light overflow-hidden text-center border-t border-white/10">
+        <div className="absolute inset-0 z-0 opacity-20">
+          <Image
+            src="/images/catering_private.jpg"
+            alt="Private dining room background"
+            fill
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-black/70" />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-4xl px-6">
+          <span className="font-sans text-xs md:text-sm font-bold tracking-[0.25em] uppercase text-brand-red mb-3 block">
+            Exclusive Gatherings
+          </span>
+          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
+            Host Your Private Event With Us
+          </h2>
+          <p className="font-sans text-sm md:text-base text-neutral-300/90 leading-relaxed max-w-2xl mx-auto mb-10">
+            From intimate corporate dinners and wedding rehearsals to birthday celebrations and private momo-making masterclasses. Let us create a custom menu that wows your guests.
+          </p>
+          <Link
+            href="/catering"
+            className="inline-flex items-center gap-2 border border-cream-light/35 hover:border-cream-light px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-widest bg-black/40 hover:bg-black/70 backdrop-blur-md transition-all text-cream-light pointer-events-auto cursor-pointer"
+          >
+            Inquire About Private Events
+          </Link>
         </div>
       </section>
 
