@@ -21,112 +21,99 @@ export const VideoHero: React.FC = () => {
     video.muted = true;
     video.playsInline = true;
 
-    const initTimeline = () => {
-      const duration = video.duration || 10;
+    // Standard video duration is 10 seconds. Initialize timeline instantly
+    const duration = 10;
+    const videoProxy = { currentTime: 0 };
 
-      // Use a proxy object for setting video currentTime to enable GSAP to apply its smooth scrub inertia directly
-      const videoProxy = { currentTime: 0 };
+    // GSAP context helps with clean state reversion on component unmount
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 1.5, // Smooth lag/momentum buffer
+        },
+      });
 
-      // GSAP context helps with clean state reversion on component unmount
-      const ctx = gsap.context(() => {
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 1.5, // Smooth lag/momentum buffer
-          },
-        });
+      // 1. Scrub proxy playhead position linearly across scrollable distance
+      tl.to(videoProxy, {
+        currentTime: duration,
+        ease: "none",
+      }, 0);
 
-        // 1. Scrub proxy playhead position linearly across scrollable distance
-        tl.to(videoProxy, {
-          currentTime: duration,
-          ease: "none",
-          onUpdate: () => {
-            if (video) {
-              video.currentTime = videoProxy.currentTime;
-            }
-          }
-        }, 0);
+      // 2. Synchronize floating text fades relative to the video duration
+      const timings = [
+        { start: 0, end: 1 },
+        { start: 1, end: 3 },
+        { start: 3, end: 5 },
+        { start: 5, end: 7 },
+        { start: 7, end: 9 },
+      ];
 
-        // 2. Synchronize floating text fades relative to the video duration
-        const timings = [
-          { start: 0, end: 1 },
-          { start: 1, end: 3 },
-          { start: 3, end: 5 },
-          { start: 5, end: 7 },
-          { start: 7, end: 9 },
-        ];
+      textRefs.current.forEach((textEl, index) => {
+        if (!textEl) return;
+        const { start, end } = timings[index];
 
-        textRefs.current.forEach((textEl, index) => {
-          if (!textEl) return;
-          const { start, end } = timings[index];
+        if (index === 0) {
+          // First overlay is visible initially
+          gsap.set(textEl, { opacity: 1, y: 0, scale: 1 });
+          
+          // Fades out at index 0 range end
+          tl.to(textEl, {
+            opacity: 0,
+            y: -30,
+            scale: 0.95,
+            duration: 0.3,
+          }, start + 0.7);
+        } else {
+          // Successive overlays start hidden below the focal point
+          gsap.set(textEl, { opacity: 0, y: 30, scale: 1.05 });
 
-          if (index === 0) {
-            // First overlay is visible initially
-            gsap.set(textEl, { opacity: 1, y: 0, scale: 1 });
-            
-            // Fades out at index 0 range end
+          // Fade and translate into view
+          tl.to(textEl, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.4,
+          }, start - 0.2);
+
+          // Fade and translate out of view
+          if (index < textRefs.current.length - 1) {
             tl.to(textEl, {
               opacity: 0,
               y: -30,
               scale: 0.95,
-              duration: 0.3,
-            }, start + 0.7);
-          } else {
-            // Successive overlays start hidden below the focal point
-            gsap.set(textEl, { opacity: 0, y: 30, scale: 1.05 });
-
-            // Fade and translate into view
-            tl.to(textEl, {
-              opacity: 1,
-              y: 0,
-              scale: 1,
               duration: 0.4,
-            }, start - 0.2);
-
-            // Fade and translate out of view
-            if (index < textRefs.current.length - 1) {
-              tl.to(textEl, {
-                opacity: 0,
-                y: -30,
-                scale: 0.95,
-                duration: 0.4,
-              }, end - 0.2);
-            } else {
-              // Final slide fades out at the very end of scroll trigger
-              tl.to(textEl, {
-                opacity: 0,
-                y: -30,
-                scale: 0.95,
-                duration: 0.4,
-              }, end);
-            }
+            }, end - 0.2);
+          } else {
+            // Final slide fades out at the very end of scroll trigger
+            tl.to(textEl, {
+              opacity: 0,
+              y: -30,
+              scale: 0.95,
+              duration: 0.4,
+            }, end);
           }
-        });
-      }, containerRef);
+        }
+      });
+    }, containerRef);
 
-      return ctx;
+    let renderId: number;
+    const updatePlayhead = () => {
+      if (video && !video.seeking) {
+        const diff = Math.abs(video.currentTime - videoProxy.currentTime);
+        if (diff > 0.03) {
+          video.currentTime = videoProxy.currentTime;
+        }
+      }
+      renderId = requestAnimationFrame(updatePlayhead);
     };
-
-    let ctx: gsap.Context | undefined;
-
-    // Initialize once metadata is loaded so duration is accurate
-    if (video.readyState >= 1) {
-      ctx = initTimeline();
-    } else {
-      const handleMetadata = () => {
-        ctx = initTimeline();
-      };
-      video.addEventListener("loadedmetadata", handleMetadata);
-      return () => {
-        video.removeEventListener("loadedmetadata", handleMetadata);
-        ctx?.revert();
-      };
-    }
+    renderId = requestAnimationFrame(updatePlayhead);
 
     return () => {
-      ctx?.revert();
+      cancelAnimationFrame(renderId);
+      ctx.revert();
     };
   }, []);
 
@@ -169,7 +156,7 @@ export const VideoHero: React.FC = () => {
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-85"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
         />
 
         {/* Ambient Overlay for Visual Contrast */}
@@ -183,6 +170,7 @@ export const VideoHero: React.FC = () => {
               textRefs.current[index] = el;
             }}
             className={`absolute flex flex-col text-cream-light pointer-events-none select-none px-6 md:px-12 z-20 ${slide.positionClass}`}
+            style={{ opacity: index === 0 ? 1 : 0 }}
           >
             <h2 className="font-serif text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
               {slide.title}
