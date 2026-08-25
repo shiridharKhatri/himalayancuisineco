@@ -22,9 +22,10 @@ export const VideoHero: React.FC = () => {
     video.playsInline = true;
     video.pause();
 
-    // Standard video duration is 10 seconds. Initialize timeline instantly
-    const duration = 10;
-    const videoProxy = { currentTime: 0 };
+    // Start at 0.4s to skip the initial blurry lens focus frame, and end at 9.8s
+    const startPlayhead = 0.4;
+    const endPlayhead = 9.8;
+    const videoProxy = { currentTime: startPlayhead };
 
     // GSAP context helps with clean state reversion on component unmount
     const ctx = gsap.context(() => {
@@ -38,9 +39,11 @@ export const VideoHero: React.FC = () => {
       });
 
       // 1. Scrub proxy playhead position linearly across scrollable distance
+      // Explicitly define duration to 10 to match the text timeline scale
       tl.to(videoProxy, {
-        currentTime: duration,
+        currentTime: endPlayhead,
         ease: "none",
+        duration: 10,
       }, 0);
 
       // 2. Synchronize floating text fades relative to the video duration
