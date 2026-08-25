@@ -149,9 +149,6 @@ export const VideoHero: React.FC = () => {
           totalFrames={totalFrames}
         />
 
-        {/* Ambient Overlay for Visual Contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-black/75 pointer-events-none" />
-
         {/* Dynamic Floating Text Overlays positioned for frame-by-frame clear space */}
         {textOverlays.map((slide, index) => (
           <div
@@ -171,14 +168,6 @@ export const VideoHero: React.FC = () => {
             </p>
           </div>
         ))}
-
-        {/* Bouncing Scroll Explorer Indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center text-cream-light/60 font-sans text-[10px] tracking-widest uppercase pointer-events-none animate-pulse">
-          <span className="mb-2">Scroll to Explore</span>
-          <div className="w-6 h-10 border border-cream-light/30 rounded-full flex justify-center p-1.5">
-            <div className="w-1.5 h-1.5 bg-brand-red rounded-full animate-bounce" />
-          </div>
-        </div>
 
       </div>
     </div>

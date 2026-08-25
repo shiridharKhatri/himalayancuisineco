@@ -15,6 +15,9 @@ export const Header: React.FC = () => {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [isScrolled, setIsScrolled] = React.useState(false);
+
+  const isHomePage = pathname === "/";
+  const isTransparent = isHomePage && !isScrolled;
   
   const cartItems = useCartStore((state) => state.items);
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
@@ -23,9 +26,12 @@ export const Header: React.FC = () => {
 
   React.useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      // Transition navbar to white solid background when scrolling past the 1200vh video hero section
+      const threshold = window.innerHeight * 11;
+      setIsScrolled(window.scrollY > threshold);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -47,8 +53,12 @@ export const Header: React.FC = () => {
   return (
     <>
       <header
-        className={`sticky top-0 z-40 w-full bg-cream-light transition-all duration-300 border-b border-neutral-warm/40 ${
-          isScrolled ? "py-3.5 shadow-[0_4px_16px_rgba(21,21,21,0.02)]" : "py-3.5"
+        className={`z-40 w-full transition-all duration-300 ${
+          isTransparent
+            ? "absolute top-0 left-0 bg-transparent border-transparent py-4 text-white"
+            : `sticky top-0 bg-cream-light border-b border-neutral-warm/40 text-charcoal ${
+                isScrolled ? "py-3.5 shadow-[0_4px_16px_rgba(21,21,21,0.02)]" : "py-3.5"
+              }`
         }`}
       >
         <div className="mx-auto max-w-[1400px] px-6 md:px-12 flex items-center justify-between">
@@ -57,19 +67,30 @@ export const Header: React.FC = () => {
           <div className="flex md:hidden items-center justify-between w-full">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="p-2 -ml-2 text-charcoal hover:text-brand-red transition-colors focus-ring cursor-pointer"
+              className={`p-2 -ml-2 transition-colors focus-ring cursor-pointer hover:text-brand-red ${
+                isTransparent ? "text-white" : "text-charcoal"
+              }`}
               aria-label="Open mobile menu"
             >
               <Menu className="h-6 w-6" />
             </button>
 
             <Link href="/" className="relative h-10 w-44 hover:opacity-90 transition-opacity">
-              <Image src="/images/logo.png" alt="Himalayan Cuisine Co." fill className="object-contain object-center" priority />
+              <Image
+                src="/images/logo.png"
+                alt="Himalayan Cuisine Co."
+                fill
+                className="object-contain object-center"
+                style={isTransparent ? { filter: "invert(1) brightness(10)" } : undefined}
+                priority
+              />
             </Link>
 
             <button
               onClick={() => setCartOpen(true)}
-              className="p-2 -mr-2 text-charcoal hover:text-brand-red transition-colors relative focus-ring cursor-pointer"
+              className={`p-2 -mr-2 transition-colors relative focus-ring cursor-pointer hover:text-brand-red ${
+                isTransparent ? "text-white" : "text-charcoal"
+              }`}
               aria-label={`Open shopping cart, ${cartCount} items`}
             >
               <ShoppingBag className="h-6 w-6" />
@@ -85,7 +106,14 @@ export const Header: React.FC = () => {
           <div className="hidden md:flex items-center justify-between w-full">
             {/* Logo */}
             <Link href="/" className="relative h-12 w-48 hover:opacity-90 transition-opacity mr-8 shrink-0">
-              <Image src="/images/logo.png" alt="Himalayan Cuisine Co." fill className="object-contain object-left" priority />
+              <Image
+                src="/images/logo.png"
+                alt="Himalayan Cuisine Co."
+                fill
+                className="object-contain object-left"
+                style={isTransparent ? { filter: "invert(1) brightness(10)" } : undefined}
+                priority
+              />
             </Link>
 
             {/* Central Navigation Links */}
@@ -97,7 +125,11 @@ export const Header: React.FC = () => {
                     key={link.label}
                     href={link.href}
                     className={`font-sans text-sm font-medium tracking-wide uppercase transition-colors hover:text-brand-red cursor-pointer ${
-                      isActive ? "text-brand-red font-semibold" : "text-charcoal"
+                      isActive
+                        ? "text-brand-red font-semibold"
+                        : isTransparent
+                        ? "text-white"
+                        : "text-charcoal"
                     }`}
                   >
                     {link.label}
@@ -111,7 +143,11 @@ export const Header: React.FC = () => {
               <Link
                 href="/gift-cards"
                 className={`font-sans text-sm font-medium tracking-wide uppercase transition-colors hover:text-brand-red cursor-pointer ${
-                  pathname === "/gift-cards" ? "text-brand-red font-semibold" : "text-charcoal"
+                  pathname === "/gift-cards"
+                    ? "text-brand-red font-semibold"
+                    : isTransparent
+                    ? "text-white"
+                    : "text-charcoal"
                 }`}
               >
                 Gift Cards
@@ -120,7 +156,9 @@ export const Header: React.FC = () => {
               {session ? (
                 <Link
                   href="/account"
-                  className="flex items-center space-x-1.5 font-sans text-sm font-medium tracking-wide uppercase transition-colors text-charcoal hover:text-brand-red cursor-pointer"
+                  className={`flex items-center space-x-1.5 font-sans text-sm font-medium tracking-wide uppercase transition-colors hover:text-brand-red cursor-pointer ${
+                    isTransparent ? "text-white" : "text-charcoal"
+                  }`}
                   aria-label="Manage customer account"
                 >
                   <User className="h-4 w-4" />
@@ -130,7 +168,11 @@ export const Header: React.FC = () => {
                 <Link
                   href="/sign-in"
                   className={`font-sans text-sm font-medium tracking-wide uppercase transition-colors hover:text-brand-red cursor-pointer ${
-                    pathname === "/sign-in" ? "text-brand-red font-semibold" : "text-charcoal"
+                    pathname === "/sign-in"
+                      ? "text-brand-red font-semibold"
+                      : isTransparent
+                      ? "text-white"
+                      : "text-charcoal"
                   }`}
                 >
                   Sign In
@@ -140,7 +182,9 @@ export const Header: React.FC = () => {
               {/* Cart Button */}
               <button
                 onClick={() => setCartOpen(true)}
-                className="flex items-center space-x-1.5 p-2 text-charcoal hover:text-brand-red transition-colors relative focus-ring cursor-pointer"
+                className={`flex items-center space-x-1.5 p-2 transition-colors relative focus-ring cursor-pointer hover:text-brand-red ${
+                  isTransparent ? "text-white" : "text-charcoal"
+                }`}
                 aria-label={`Open shopping cart, ${cartCount} items`}
               >
                 <ShoppingBag className="h-5 w-5" />
