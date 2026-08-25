@@ -106,27 +106,27 @@ export const VideoHero: React.FC = () => {
     {
       title: "Authentic Himalayan Flavors",
       description: "Handcrafted dumplings served piping hot with signature chili chutney.",
-      positionClass: "top-32 md:top-44 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-3xl",
+      positionClass: "top-32 md:top-44 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-4xl px-8 py-8 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.65)_0%,transparent_75%)]",
     },
     {
       title: "Golden, Crispy Perfection",
       description: "Paired with bold, spicy dipping sauce for the ultimate crunch.",
-      positionClass: "top-32 md:top-44 left-6 md:left-24 text-left items-start w-full max-w-xl",
+      positionClass: "top-32 md:top-44 left-0 text-left items-start pl-6 md:pl-24 pr-16 py-8 bg-gradient-to-r from-black/65 via-black/40 to-transparent max-w-2xl rounded-r-lg",
     },
     {
       title: "Flame-Grilled Excellence",
       description: "Marinated in rich spices and seared to smoky perfection.",
-      positionClass: "bottom-24 md:bottom-32 left-6 md:left-24 text-left items-start w-full max-w-xl",
+      positionClass: "bottom-24 md:bottom-32 left-0 text-left items-start pl-6 md:pl-24 pr-16 py-8 bg-gradient-to-r from-black/65 via-black/40 to-transparent max-w-2xl rounded-r-lg",
     },
     {
       title: "Aromatic & Rich",
       description: "Long-grain basmati cooked with authentic herbs and fried onions.",
-      positionClass: "top-32 md:top-44 right-6 md:right-24 text-right items-end w-full max-w-xl",
+      positionClass: "top-32 md:top-44 right-0 text-right items-end pr-6 md:pr-24 pl-16 py-8 bg-gradient-to-l from-black/65 via-black/40 to-transparent max-w-2xl rounded-l-lg",
     },
     {
       title: "Slow-Cooked Goodness",
       description: "Tender meat infused with deep, savory spice blends.",
-      positionClass: "top-32 md:top-44 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-3xl",
+      positionClass: "top-32 md:top-44 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-4xl px-8 py-8 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.65)_0%,transparent_75%)]",
     },
   ];
 
