@@ -6,10 +6,14 @@ import { useUIStore } from "@/stores/uiStore";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle, AlertTriangle, AlertCircle, Info } from "lucide-react";
 
+import { SmoothScroll } from "./SmoothScroll";
+
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      {children}
+      <SmoothScroll>
+        {children}
+      </SmoothScroll>
       <ToastContainer />
     </SessionProvider>
   );
