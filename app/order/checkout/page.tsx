@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { ShoppingBag, ArrowLeft, CreditCard, Clock, MapPin } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
@@ -368,9 +369,20 @@ export default function CheckoutPage() {
                 {/* Cart list scroll area */}
                 <div className="px-6 py-4 max-h-[300px] overflow-y-auto divide-y divide-neutral-warm/30">
                   {items.map((item) => (
-                    <div key={item.id} className="py-3 flex justify-between items-start text-sm first:pt-0">
-                      <div className="pr-4">
-                        <h4 className="font-sans font-semibold text-charcoal">{item.menuItem.name}</h4>
+                    <div key={item.id} className="py-3 flex items-start space-x-3 text-sm first:pt-0">
+                      {item.menuItem.image && (
+                        <div className="relative w-12 h-12 rounded-md overflow-hidden bg-cream-dark flex-shrink-0 border border-neutral-warm/40">
+                          <Image
+                            src={item.menuItem.image}
+                            alt={item.menuItem.name}
+                            fill
+                            className="object-cover"
+                            sizes="48px"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0 pr-4">
+                        <h4 className="font-sans font-semibold text-charcoal truncate">{item.menuItem.name}</h4>
                         <span className="font-sans text-xs text-muted-gray">Qty: {item.quantity}</span>
                         {(item.protein || item.spiceLevel || item.selectedModifiers.length > 0) && (
                           <div className="text-[10px] text-muted-gray mt-0.5 space-y-0.5">
@@ -382,7 +394,7 @@ export default function CheckoutPage() {
                           </div>
                         )}
                       </div>
-                      <span className="font-sans text-sm font-semibold text-charcoal">
+                      <span className="font-sans text-sm font-semibold text-charcoal flex-shrink-0">
                         ${(item.singleItemPrice * item.quantity).toFixed(2)}
                       </span>
                     </div>

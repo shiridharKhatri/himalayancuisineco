@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
@@ -100,6 +101,17 @@ export const CartDrawer: React.FC = () => {
             <div className="space-y-4 division-y division-neutral-warm/40">
               {items.map((item) => (
                 <div key={item.id} className="flex items-start space-x-4 pt-4 first:pt-0">
+                  {item.menuItem.image && (
+                    <div className="relative w-16 h-16 rounded-md overflow-hidden bg-cream-dark flex-shrink-0 border border-neutral-warm/40">
+                      <Image
+                        src={item.menuItem.image}
+                        alt={item.menuItem.name}
+                        fill
+                        className="object-cover"
+                        sizes="64px"
+                      />
+                    </div>
+                  )}
                   <div className="flex-1">
                     <div className="flex justify-between items-start">
                       <h4 className="font-sans text-sm font-semibold text-charcoal pr-2">
