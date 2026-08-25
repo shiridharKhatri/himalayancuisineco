@@ -134,22 +134,27 @@ export const VideoHero: React.FC = () => {
     {
       title: "Authentic Himalayan Flavors",
       description: "Handcrafted dumplings served piping hot with signature chili chutney.",
+      positionClass: "top-20 md:top-28 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-3xl",
     },
     {
       title: "Golden, Crispy Perfection",
       description: "Paired with bold, spicy dipping sauce for the ultimate crunch.",
+      positionClass: "top-20 md:top-28 left-6 md:left-24 text-left items-start w-full max-w-xl",
     },
     {
       title: "Flame-Grilled Excellence",
       description: "Marinated in rich spices and seared to smoky perfection.",
+      positionClass: "bottom-24 md:bottom-32 left-6 md:left-24 text-left items-start w-full max-w-xl",
     },
     {
       title: "Aromatic & Rich",
       description: "Long-grain basmati cooked with authentic herbs and fried onions.",
+      positionClass: "top-20 md:top-28 right-6 md:right-24 text-right items-end w-full max-w-xl",
     },
     {
       title: "Slow-Cooked Goodness",
       description: "Tender meat infused with deep, savory spice blends.",
+      positionClass: "top-20 md:top-28 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-3xl",
     },
   ];
 
@@ -170,28 +175,24 @@ export const VideoHero: React.FC = () => {
         {/* Ambient Overlay for Visual Contrast */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-black/75 pointer-events-none" />
 
-        {/* Centered Floating Text Overlays */}
-        <div className="absolute inset-0 flex items-center justify-center px-6 md:px-12 pointer-events-none">
-          <div className="w-full max-w-4xl text-center relative h-32 md:h-48 flex items-center justify-center">
-            {textOverlays.map((slide, index) => (
-              <div
-                key={index}
-                ref={(el) => {
-                  textRefs.current[index] = el;
-                }}
-                className="absolute inset-0 flex flex-col items-center justify-center text-cream-light pointer-events-none select-none"
-              >
-                <h2 className="font-serif text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
-                  {slide.title}
-                </h2>
-                <div className="w-16 h-0.5 bg-brand-red mb-4 rounded-full" />
-                <p className="font-sans text-sm md:text-lg lg:text-xl text-neutral-300/90 max-w-2xl leading-relaxed drop-shadow-[0_1px_5px_rgba(0,0,0,0.5)]">
-                  {slide.description}
-                </p>
-              </div>
-            ))}
+        {/* Dynamic Floating Text Overlays positioned for frame-by-frame clear space */}
+        {textOverlays.map((slide, index) => (
+          <div
+            key={index}
+            ref={(el) => {
+              textRefs.current[index] = el;
+            }}
+            className={`absolute flex flex-col text-cream-light pointer-events-none select-none px-6 md:px-12 z-20 ${slide.positionClass}`}
+          >
+            <h2 className="font-serif text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
+              {slide.title}
+            </h2>
+            <div className="w-16 h-0.5 bg-brand-red mb-4 rounded-full" />
+            <p className="font-sans text-sm md:text-lg lg:text-xl text-neutral-300/90 leading-relaxed drop-shadow-[0_1px_6px_rgba(0,0,0,0.6)]">
+              {slide.description}
+            </p>
           </div>
-        </div>
+        ))}
 
         {/* Bouncing Scroll Explorer Indicator */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center text-cream-light/60 font-sans text-[10px] tracking-widest uppercase pointer-events-none animate-pulse">
