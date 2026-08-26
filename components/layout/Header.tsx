@@ -27,9 +27,8 @@ export const Header: React.FC = () => {
 
   React.useEffect(() => {
     const handleScroll = () => {
-      // Transition navbar to white solid background when scrolling past the 900vh video hero section
-      const threshold = window.innerHeight * 8;
-      setIsScrolled(window.scrollY > threshold);
+      // Transition navbar to luxury solid glassmorphism as soon as user starts scrolling
+      setIsScrolled(window.scrollY > 40);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
@@ -54,14 +53,14 @@ export const Header: React.FC = () => {
   return (
     <>
       <header
-        className={`z-40 w-full transition-all duration-500 ease-out ${
-          isTransparent
-            ? "absolute top-0 left-0 bg-transparent border-transparent py-4 text-white"
-            : `sticky top-0 text-charcoal ${
-                isScrolled
-                  ? "py-2.5 bg-cream-light/95 backdrop-blur-lg shadow-[0_1px_3px_rgba(21,21,21,0.06),0_8px_24px_rgba(21,21,21,0.04)] border-b border-neutral-warm/20"
-                  : "py-3 bg-cream-light border-b border-neutral-warm/30"
+        className={`z-50 w-full transition-all duration-300 ease-out ${
+          isHomePage
+            ? `fixed top-0 left-0 right-0 ${
+                isTransparent
+                  ? "bg-transparent py-4 text-white"
+                  : "bg-white/95 backdrop-blur-md text-charcoal shadow-[0_2px_12px_rgba(0,0,0,0.06)] border-b border-neutral-200/80 py-2.5"
               }`
+            : "sticky top-0 bg-white/95 backdrop-blur-md text-charcoal shadow-[0_2px_12px_rgba(0,0,0,0.06)] border-b border-neutral-200/80 py-2.5"
         }`}
       >
         <div className="mx-auto max-w-[1440px] px-6 md:px-10 lg:px-14 flex items-center justify-between">

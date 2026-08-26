@@ -24,6 +24,8 @@ function MenuContent() {
   const categoryParam = searchParams?.get("category") || "all";
 
   // State
+  const [categories, setCategories] = React.useState<any[]>(CATEGORIES);
+  const [menuItems, setMenuItems] = React.useState<MenuItem[]>(MENU_ITEMS);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedDiet, setSelectedDiet] = React.useState<string[]>([]);
   const [selectedSpice, setSelectedSpice] = React.useState<number | null>(null);
@@ -35,6 +37,22 @@ function MenuContent() {
   
   // Mobile filters panel state
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = React.useState(false);
+
+  // Fetch real menu from SQLite database
+  React.useEffect(() => {
+    fetch("/api/menu")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setCategories(data);
+          const all = data.flatMap((c: any) => c.items || []);
+          if (all.length > 0) {
+            setMenuItems(all);
+          }
+        }
+      })
+      .catch((err) => console.error("Menu fetch error:", err));
+  }, []);
 
   // Handle category changing
   const handleCategorySelect = (categorySlug: string) => {
@@ -63,10 +81,10 @@ function MenuContent() {
 
   // Filter menu items
   const filteredItems = React.useMemo(() => {
-    return MENU_ITEMS.filter((item) => {
+    return menuItems.filter((item) => {
       // Category filter
       if (categoryParam !== "all") {
-        const cat = CATEGORIES.find((c) => c.slug === categoryParam);
+        const cat = categories.find((c) => c.slug === categoryParam);
         if (cat && item.categoryId !== cat.id) return false;
       }
 
@@ -75,14 +93,14 @@ function MenuContent() {
         const query = searchQuery.toLowerCase();
         const matchesName = item.name.toLowerCase().includes(query);
         const matchesDesc = item.description.toLowerCase().includes(query);
-        const matchesTags = item.dietaryTags.some((t) => t.toLowerCase().includes(query));
+        const matchesTags = (item.dietaryTags || []).some((t) => t.toLowerCase().includes(query));
         if (!matchesName && !matchesDesc && !matchesTags) return false;
       }
 
       // Dietary filter
       if (selectedDiet.length > 0) {
         const matchesAllDiets = selectedDiet.every((diet) =>
-          item.dietaryTags.map(t => t.toLowerCase()).includes(diet.toLowerCase())
+          (item.dietaryTags || []).map((t) => t.toLowerCase()).includes(diet.toLowerCase())
         );
         if (!matchesAllDiets) return false;
       }
@@ -104,7 +122,7 @@ function MenuContent() {
 
       return true;
     });
-  }, [categoryParam, searchQuery, selectedDiet, selectedSpice, showOnlyPopular]);
+  }, [categories, menuItems, categoryParam, searchQuery, selectedDiet, selectedSpice, showOnlyPopular, showOnlyFavorites, favoriteIds]);
 
   const dietaryFilterOptions = [
     { label: "Gluten-Free", value: "gluten-free" },
@@ -162,7 +180,7 @@ function MenuContent() {
             >
               All Items
             </button>
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => handleCategorySelect(cat.slug)}
