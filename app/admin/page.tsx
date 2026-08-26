@@ -102,7 +102,8 @@ export default function AdminDashboardPage() {
   const dayActivity = data?.charts?.dayActivity || [];
 
   // Construct chart coordinates dynamically with high resolution (600w x 180h)
-  const maxChartRev = Math.max(...raw7Days.map((d: any) => d.revenue), 1000) * 1.15;
+  const maxDataRev = Math.max(0, ...raw7Days.map((d: any) => d.revenue || 0));
+  const maxChartRev = (maxDataRev > 0 ? maxDataRev : 100) * 1.15;
   const chartPoints = raw7Days.map((d: any, index: number) => {
     const x = raw7Days.length > 1 ? (index / (raw7Days.length - 1)) * 560 + 20 : 300;
     const y = 160 - (d.revenue / maxChartRev) * 130;
@@ -229,9 +230,8 @@ export default function AdminDashboardPage() {
                 ${Number(stats.totalRevenue || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
               </h3>
             </div>
-            <p className="text-[11px] text-emerald-600 font-medium mt-1 flex items-center gap-1 font-sans">
-              <ArrowUpRight className="h-3 w-3" />
-              <span>+18.4% vs last period</span>
+            <p className="text-[11px] text-neutral-500 font-medium mt-1 font-sans">
+              {stats.totalOrders || 0} total order transactions
             </p>
           </div>
         </div>
@@ -249,12 +249,11 @@ export default function AdminDashboardPage() {
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
               <h3 className="font-sans text-2xl sm:text-3xl font-extrabold text-[#141414]">
-                {stats.totalCustomers || stats.totalOrders || 1}
+                {stats.totalCustomers || 0}
               </h3>
             </div>
-            <p className="text-[11px] text-emerald-600 font-medium mt-1 flex items-center gap-1 font-sans">
-              <ArrowUpRight className="h-3 w-3" />
-              <span>+12.5% active diner base</span>
+            <p className="text-[11px] text-neutral-500 font-medium mt-1 font-sans">
+              Active customer accounts
             </p>
           </div>
         </div>
@@ -272,12 +271,11 @@ export default function AdminDashboardPage() {
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
               <h3 className="font-sans text-2xl sm:text-3xl font-extrabold text-[#141414]">
-                ${Number(stats.avgOrderValue || 38.5).toFixed(2)}
+                ${Number(stats.avgOrderValue || 0).toFixed(2)}
               </h3>
             </div>
-            <p className="text-[11px] text-emerald-600 font-medium mt-1 flex items-center gap-1 font-sans">
-              <ArrowUpRight className="h-3 w-3" />
-              <span>+6.2% high modifier uptake</span>
+            <p className="text-[11px] text-neutral-500 font-medium mt-1 font-sans">
+              Average per placed order
             </p>
           </div>
         </div>
@@ -303,8 +301,8 @@ export default function AdminDashboardPage() {
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-neutral-400 mt-1 font-sans">
-              {stats.pickupOrdersCount || 0} pickup • {stats.deliveryOrdersCount || 0} delivery
+            <p className="text-[11px] text-neutral-500 mt-1 font-sans">
+              {stats.pickupOrdersCount || 0} pickup &bull; {stats.deliveryOrdersCount || 0} delivery
             </p>
           </div>
         </div>
@@ -325,8 +323,8 @@ export default function AdminDashboardPage() {
                   <h2 className="font-sans text-2xl sm:text-3xl font-extrabold text-[#141414]">
                     ${Number(stats.totalRevenue || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                   </h2>
-                  <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <ArrowUpRight className="h-3 w-3" /> +24.4% vs last period
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-neutral-100 text-neutral-700">
+                    Last 7 Days Telemetry
                   </span>
                 </div>
               </div>
@@ -642,21 +640,22 @@ export default function AdminDashboardPage() {
                   stroke="#F3F4F6"
                   strokeWidth="8"
                   strokeLinecap="round"
-                  strokeDasharray="4 2"
                 />
                 <path
-                  d="M 10 50 A 40 40 0 0 1 76 22"
+                  d="M 10 50 A 40 40 0 0 1 90 50"
                   fill="none"
                   stroke="#B51C20"
                   strokeWidth="8"
                   strokeLinecap="round"
-                  strokeDasharray="4 2"
+                  strokeDasharray="125.66"
+                  strokeDashoffset={125.66 - (125.66 * (stats.repeatCustomerRate || 0)) / 100}
+                  className="transition-all duration-700 ease-out"
                 />
               </svg>
 
               <div className="absolute top-12 flex flex-col items-center">
                 <span className="font-sans text-3xl font-black text-[#141414]">
-                  {stats.repeatCustomerRate || 68}%
+                  {stats.repeatCustomerRate || 0}%
                 </span>
                 <span className="text-[10px] text-neutral-400 mt-0.5">
                   Loyalty diner retention rate
