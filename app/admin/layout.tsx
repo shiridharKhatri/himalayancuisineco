@@ -22,6 +22,7 @@ import {
   Search,
   Settings,
   HelpCircle,
+  Flame,
   Sun,
   Moon,
   ChevronDown,
@@ -204,7 +205,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#B51C20] via-[#9B181B] to-[#6A0E10] p-4 text-white shadow-md">
             <div className="relative z-10 space-y-2">
               <div className="h-7 w-7 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-white" />
+                <Flame className="h-4 w-4 text-white" />
               </div>
               <div>
                 <h4 className="font-sans font-bold text-xs">Live Kitchen System</h4>
