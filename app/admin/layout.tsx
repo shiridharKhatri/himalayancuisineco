@@ -69,7 +69,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const secondaryNavItems = [
     { label: "Catering", href: "/admin/catering", icon: Wine },
     { label: "Gift Cards", href: "/admin/gift-cards", icon: Gift },
-    { label: "Job Applicants", href: "/admin/careers", icon: Briefcase },
+    { label: "Careers & Hiring", href: "/admin/careers", icon: Briefcase },
   ];
 
   const systemNavItems = [

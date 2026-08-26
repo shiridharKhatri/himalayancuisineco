@@ -27,7 +27,19 @@ import { Job } from "@/types";
 export default function CareersPage() {
   const { addToast } = useUIStore();
 
+  const [jobs, setJobs] = React.useState<Job[]>(OPEN_JOBS);
   const [selectedJob, setSelectedJob] = React.useState<Job | null>(null);
+
+  React.useEffect(() => {
+    fetch("/api/jobs")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.jobs && data.jobs.length > 0) {
+          setJobs(data.jobs);
+        }
+      })
+      .catch((err) => console.error(err));
+  }, []);
 
   // Application Form State
   const [name, setName] = React.useState("");
@@ -142,7 +154,7 @@ export default function CareersPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {OPEN_JOBS.map((job) => (
+            {jobs.map((job) => (
               <div
                 key={job.id}
                 className="flex flex-col justify-between p-6 sm:p-7 rounded-2xl bg-white border border-neutral-warm/70 shadow-xs hover:border-charcoal/30 hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 text-left"
