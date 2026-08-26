@@ -452,14 +452,6 @@ function SignInPageContent() {
                       <Phone className="h-5 w-5 text-muted-gray" />
                       Continue with Phone
                     </button>
-
-                    {/* Security note */}
-                    <div className="flex items-center justify-center gap-1.5 pt-3">
-                      <Shield className="h-3.5 w-3.5 text-accent-green" />
-                      <span className="font-sans text-[10px] text-muted-gray font-medium uppercase tracking-wider">
-                        Secured with 256-bit encryption
-                      </span>
-                    </div>
                   </div>
                 )}
 
