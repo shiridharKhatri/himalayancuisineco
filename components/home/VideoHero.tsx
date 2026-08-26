@@ -220,30 +220,28 @@ export const VideoHero: React.FC = () => {
             className={`absolute flex flex-col text-cream-light pointer-events-none select-none z-20 ${slide.positionClass}`}
             style={{ opacity: index === 0 ? 1 : 0 }}
           >
-            {/* Pill Badge */}
+            {/* Subtitle / Category Label (No box) */}
             {slide.badge && (
-              <div
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-[11px] md:text-xs font-bold tracking-widest uppercase mb-3.5 shadow-lg ${
+              <span
+                className={`font-sans text-xs md:text-sm font-bold tracking-[0.22em] uppercase mb-2.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] ${
                   slide.styleType === "bottomAccent"
-                    ? "text-amber-400 border-amber-500/30"
+                    ? "text-amber-400"
                     : slide.styleType === "rightAccent"
-                    ? "text-amber-300 border-amber-400/30"
-                    : "text-brand-red border-brand-red/30"
+                    ? "text-amber-300"
+                    : "text-brand-red"
                 }`}
               >
-                <span>{slide.badge}</span>
-              </div>
+                {slide.badge}
+              </span>
             )}
 
-            {/* Title with distinct accent borders based on position */}
+            {/* Title & Description (No box cutouts or borders) */}
             <div
               className={`space-y-3 ${
-                slide.styleType === "leftAccent"
-                  ? "border-l-2 border-brand-red pl-5 text-left"
-                  : slide.styleType === "bottomAccent"
-                  ? "border-l-2 border-amber-500 pl-5 text-left"
+                slide.styleType === "leftAccent" || slide.styleType === "bottomAccent"
+                  ? "text-left"
                   : slide.styleType === "rightAccent"
-                  ? "border-r-2 border-brand-red pr-5 text-right"
+                  ? "text-right"
                   : "text-center"
               }`}
             >
