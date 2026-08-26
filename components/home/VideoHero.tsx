@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { CanvasSequence, CanvasSequenceRef } from "./CanvasSequence";
@@ -154,7 +155,8 @@ export const VideoHero: React.FC = () => {
       positionClass:
         "top-28 md:top-36 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-3xl px-6",
       styleType: "centerHero",
-      hasCTA: true,
+      ctaText: "Explore Full Menu",
+      ctaLink: "/menu",
     },
     {
       badge: "Handcrafted Dumplings",
@@ -162,6 +164,8 @@ export const VideoHero: React.FC = () => {
       description: "Paired with bold, spicy dipping sauce for the ultimate crunch.",
       positionClass: "top-28 md:top-36 left-6 md:left-20 text-left items-start max-w-xl",
       styleType: "leftAccent",
+      ctaText: "Explore Momos",
+      ctaLink: "/menu?search=momo",
     },
     {
       badge: "Clay Oven Classics",
@@ -169,6 +173,8 @@ export const VideoHero: React.FC = () => {
       description: "Marinated in rich Himalayan spices and seared to smoky perfection.",
       positionClass: "bottom-24 md:bottom-32 left-6 md:left-20 text-left items-start max-w-xl",
       styleType: "bottomAccent",
+      ctaText: "Explore Tandoori",
+      ctaLink: "/menu?search=tandoori",
     },
     {
       badge: "Royal Rice Dishes",
@@ -176,6 +182,8 @@ export const VideoHero: React.FC = () => {
       description: "Long-grain basmati cooked with authentic herbs, saffron, and fried onions.",
       positionClass: "top-28 md:top-36 right-6 md:right-20 text-right items-end max-w-xl",
       styleType: "rightAccent",
+      ctaText: "Explore Biryani",
+      ctaLink: "/menu?search=biryani",
     },
     {
       badge: "Slow-Cooked Curries",
@@ -184,7 +192,8 @@ export const VideoHero: React.FC = () => {
       positionClass:
         "top-28 md:top-36 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-3xl px-6",
       styleType: "centerGrand",
-      hasCTA: true,
+      ctaText: "Explore Curries",
+      ctaLink: "/menu?search=curry",
     },
   ];
 
@@ -247,13 +256,25 @@ export const VideoHero: React.FC = () => {
               </p>
             </div>
 
-            {slide.hasCTA && (
-              <Link
-                href="/menu"
-                className="mt-6 inline-flex items-center gap-2 border border-cream-light/35 hover:border-cream-light px-8 py-3 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest bg-black/40 hover:bg-black/70 backdrop-blur-md transition-all text-cream-light pointer-events-auto cursor-pointer shadow-xl hover:shadow-2xl"
+            {/* Action CTA Button */}
+            {slide.ctaText && slide.ctaLink && (
+              <div
+                className={`mt-6 ${
+                  slide.styleType === "rightAccent"
+                    ? "flex justify-end"
+                    : slide.styleType === "leftAccent" || slide.styleType === "bottomAccent"
+                    ? "flex justify-start"
+                    : "flex justify-center"
+                }`}
               >
-                Explore Menu
-              </Link>
+                <Link
+                  href={slide.ctaLink}
+                  className="inline-flex items-center gap-2 border border-cream-light/35 hover:border-cream-light hover:bg-brand-red px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest bg-black/40 hover:bg-brand-red backdrop-blur-md transition-all text-cream-light pointer-events-auto cursor-pointer shadow-xl hover:shadow-2xl group/btn"
+                >
+                  <span>{slide.ctaText}</span>
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/btn:translate-x-1" />
+                </Link>
+              </div>
             )}
           </div>
         ))}
