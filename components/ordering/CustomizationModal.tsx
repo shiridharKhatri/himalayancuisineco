@@ -94,7 +94,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({ menuItem
         
         {/* Item Banner Image & Info */}
         <div className="flex items-start space-x-4">
-          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-sm border border-neutral-warm bg-cream-dark">
+          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-neutral-warm bg-cream-dark shadow-2xs">
             <Image
               src={menuItem.image}
               alt={menuItem.name}
@@ -110,7 +110,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({ menuItem
             <p className="font-sans text-xs text-muted-gray mt-1 line-clamp-2">
               {menuItem.description}
             </p>
-            <span className="inline-block font-sans text-sm font-semibold text-charcoal mt-1.5">
+            <span className="inline-block font-sans text-sm font-bold text-brand-red mt-1.5">
               ${basePrice.toFixed(2)}
             </span>
           </div>
@@ -128,9 +128,9 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({ menuItem
               {proteinGroup.modifiers.map((mod) => (
                 <label
                   key={mod.id}
-                  className={`flex items-center justify-between p-3 border rounded-sm cursor-pointer transition-colors ${
+                  className={`flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer transition-all ${
                     selectedProtein === mod.name
-                      ? "border-brand-red bg-brand-red-soft/20 text-brand-red-dark font-medium"
+                      ? "border-brand-red bg-brand-red-soft/20 text-brand-red-dark font-medium shadow-2xs"
                       : "border-neutral-warm bg-cream-light text-charcoal hover:bg-cream-dark/30"
                   }`}
                 >
@@ -146,7 +146,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({ menuItem
                     <span className="font-sans text-sm">{mod.name}</span>
                   </div>
                   {mod.price > 0 && (
-                    <span className="font-sans text-xs text-muted-gray">
+                    <span className="font-sans text-xs text-muted-gray font-medium">
                       +${mod.price.toFixed(2)}
                     </span>
                   )}
@@ -163,7 +163,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({ menuItem
               <Flame className="h-4 w-4 text-brand-red" />
               <span>Adjust Spice Level</span>
             </span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2.5">
               {(["Mild", "Medium", "Hot"] as const).map((level) => {
                 const isSelected = selectedSpice === level;
                 return (
@@ -171,10 +171,10 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({ menuItem
                     key={level}
                     type="button"
                     onClick={() => setSelectedSpice(level)}
-                    className={`py-2 border rounded-sm font-sans text-xs font-medium tracking-wide transition-all cursor-pointer ${
+                    className={`py-2.5 px-3 border rounded-2xl font-sans text-xs font-semibold tracking-wide transition-all cursor-pointer shadow-2xs ${
                       isSelected
-                        ? "bg-brand-red text-cream-light border-transparent"
-                        : "bg-cream-light text-charcoal border-neutral-warm hover:bg-cream-dark"
+                        ? "bg-brand-red text-cream-light border-transparent shadow-sm scale-[1.02]"
+                        : "bg-cream-light text-charcoal border-neutral-warm hover:bg-cream-dark/50"
                     }`}
                   >
                     {level}
@@ -199,9 +199,9 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({ menuItem
                   return (
                     <label
                       key={mod.id}
-                      className={`flex items-center justify-between p-3 border rounded-sm cursor-pointer transition-colors ${
+                      className={`flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer transition-all ${
                         isChecked
-                          ? "border-brand-red bg-brand-red-soft/20 text-brand-red-dark font-medium"
+                          ? "border-brand-red bg-brand-red-soft/20 text-brand-red-dark font-medium shadow-2xs"
                           : "border-neutral-warm bg-cream-light text-charcoal hover:bg-cream-dark/30"
                       }`}
                     >
@@ -216,7 +216,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({ menuItem
                         />
                         <span className="font-sans text-sm">{mod.name}</span>
                       </div>
-                      <span className="font-sans text-xs text-muted-gray">
+                      <span className="font-sans text-xs text-muted-gray font-medium">
                         +${mod.price.toFixed(2)}
                       </span>
                     </label>
@@ -229,28 +229,28 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({ menuItem
         <div className="h-px bg-neutral-warm/40" />
 
         {/* Bottom Panel (Quantity & Add) */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center border border-neutral-warm rounded-sm bg-cream-light">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center border border-neutral-warm rounded-full bg-cream-light p-1 shadow-2xs">
             <button
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              className="px-3.5 py-2 text-muted-gray hover:text-charcoal transition-colors cursor-pointer"
+              className="h-8 w-8 rounded-full flex items-center justify-center text-muted-gray hover:text-charcoal hover:bg-cream-dark/50 transition-colors cursor-pointer"
               aria-label="Decrease quantity"
             >
-              <Minus className="h-4 w-4" />
+              <Minus className="h-3.5 w-3.5" />
             </button>
-            <span className="px-4 font-sans text-sm font-semibold text-charcoal">
+            <span className="px-3 font-sans text-sm font-bold text-charcoal min-w-[28px] text-center">
               {quantity}
             </span>
             <button
               onClick={() => setQuantity((q) => q + 1)}
-              className="px-3.5 py-2 text-muted-gray hover:text-charcoal transition-colors cursor-pointer"
+              className="h-8 w-8 rounded-full flex items-center justify-center text-muted-gray hover:text-charcoal hover:bg-cream-dark/50 transition-colors cursor-pointer"
               aria-label="Increase quantity"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
             </button>
           </div>
 
-          <Button onClick={handleAddToCart} variant="primary" className="flex-1 ml-4">
+          <Button onClick={handleAddToCart} variant="primary" className="flex-1 rounded-full py-3 text-xs font-bold tracking-wider uppercase shadow-md hover:shadow-lg">
             Add to Order &bull; ${totalPrice.toFixed(2)}
           </Button>
         </div>
