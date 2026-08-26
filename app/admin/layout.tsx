@@ -63,8 +63,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-[#1E1E1E] flex flex-col md:flex-row antialiased font-sans selection:bg-[#B51C20] selection:text-white">
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 bg-white text-[#4A4A4A] border-r border-[#EBEBEB] shrink-0 sticky top-0 h-screen z-30 justify-between">
-        <div className="flex flex-col flex-1 overflow-y-auto px-4 py-5">
+      <aside
+        className="hidden md:flex flex-col w-64 bg-white text-[#4A4A4A] border-r border-[#EBEBEB] shrink-0 sticky top-0 h-screen z-30 justify-between overflow-hidden"
+        data-lenis-prevent="true"
+        data-lenis-prevent-wheel="true"
+        data-lenis-prevent-touch="true"
+      >
+        <div
+          className="flex flex-col flex-1 overflow-y-auto overscroll-contain px-4 py-5"
+          data-lenis-prevent="true"
+          data-lenis-prevent-wheel="true"
+          data-lenis-prevent-touch="true"
+        >
           {/* Brand Header */}
           <div className="flex items-center justify-between px-2 mb-6">
             <Link href="/admin" className="flex items-center gap-3">
@@ -266,7 +276,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* MOBILE NAVIGATION MENU */}
       {isMobileSidebarOpen && (
-        <div className="md:hidden fixed inset-x-0 top-[53px] bottom-0 bg-white z-40 p-4 overflow-y-auto space-y-1">
+        <div
+          className="md:hidden fixed inset-x-0 top-[53px] bottom-0 bg-white z-40 p-4 overflow-y-auto overscroll-contain space-y-1"
+          data-lenis-prevent="true"
+          data-lenis-prevent-wheel="true"
+          data-lenis-prevent-touch="true"
+        >
           {[...mainNavItems, ...secondaryNavItems, ...systemNavItems].map((item: any) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
