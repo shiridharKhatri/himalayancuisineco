@@ -148,40 +148,43 @@ export const VideoHero: React.FC = () => {
 
   const textOverlays = [
     {
-      subtitle: "Welcome to Himalayan Cuisine Co.",
+      badge: "Welcome to Himalayan Cuisine Co.",
       title: "Authentic Himalayan Flavors",
       description: "Handcrafted dumplings served piping hot with signature chili chutney.",
       positionClass:
-        "top-32 md:top-44 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-4xl px-8 py-8 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.65)_0%,transparent_75%)]",
+        "top-28 md:top-36 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-3xl px-6",
+      styleType: "centerHero",
       hasCTA: true,
     },
     {
-      subtitle: "Handcrafted Dumplings",
+      badge: "🥟 Handcrafted Dumplings",
       title: "Golden, Crispy Perfection",
       description: "Paired with bold, spicy dipping sauce for the ultimate crunch.",
-      positionClass:
-        "top-32 md:top-44 left-0 text-left items-start pl-6 md:pl-24 pr-16 py-8 bg-gradient-to-r from-black/65 via-black/40 to-transparent max-w-2xl rounded-r-lg",
+      positionClass: "top-28 md:top-36 left-6 md:left-20 text-left items-start max-w-xl",
+      styleType: "leftAccent",
     },
     {
-      subtitle: "Clay Oven Classics",
+      badge: "🔥 Clay Oven Classics",
       title: "Flame-Grilled Excellence",
-      description: "Marinated in rich spices and seared to smoky perfection.",
-      positionClass:
-        "bottom-24 md:bottom-32 left-0 text-left items-start pl-6 md:pl-24 pr-16 py-8 bg-gradient-to-r from-black/65 via-black/40 to-transparent max-w-2xl rounded-r-lg",
+      description: "Marinated in rich Himalayan spices and seared to smoky perfection.",
+      positionClass: "bottom-24 md:bottom-32 left-6 md:left-20 text-left items-start max-w-xl",
+      styleType: "bottomAccent",
     },
     {
-      subtitle: "Royal Rice Dishes",
+      badge: "✨ Royal Rice Dishes",
       title: "Aromatic & Rich",
-      description: "Long-grain basmati cooked with authentic herbs and fried onions.",
-      positionClass:
-        "top-32 md:top-44 right-0 text-right items-end pr-6 md:pr-24 pl-16 py-8 bg-gradient-to-l from-black/65 via-black/40 to-transparent max-w-2xl rounded-l-lg",
+      description: "Long-grain basmati cooked with authentic herbs, saffron, and fried onions.",
+      positionClass: "top-28 md:top-36 right-6 md:right-20 text-right items-end max-w-xl",
+      styleType: "rightAccent",
     },
     {
-      subtitle: "Slow-Cooked Curries",
+      badge: "🍲 Slow-Cooked Curries",
       title: "Slow-Cooked Goodness",
-      description: "Tender meat infused with deep, savory spice blends.",
+      description: "Tender meat and fresh paneer infused with deep, savory spice blends.",
       positionClass:
-        "top-32 md:top-44 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-4xl px-8 py-8 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.65)_0%,transparent_75%)]",
+        "top-28 md:top-36 left-1/2 -translate-x-1/2 text-center items-center w-full max-w-3xl px-6",
+      styleType: "centerGrand",
+      hasCTA: true,
     },
   ];
 
@@ -194,6 +197,10 @@ export const VideoHero: React.FC = () => {
           totalFrames={totalFrames}
         />
 
+        {/* Seamless Full-Viewport Ambient Cinematic Vignette (No local box cutouts) */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/35 z-10" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(0,0,0,0.5)_100%)] z-10" />
+
         {/* Dynamic Floating Text Overlays */}
         {textOverlays.map((slide, index) => (
           <div
@@ -201,25 +208,49 @@ export const VideoHero: React.FC = () => {
             ref={(el) => {
               textRefs.current[index] = el;
             }}
-            className={`absolute flex flex-col text-cream-light pointer-events-none select-none px-6 md:px-12 z-20 ${slide.positionClass}`}
+            className={`absolute flex flex-col text-cream-light pointer-events-none select-none z-20 ${slide.positionClass}`}
             style={{ opacity: index === 0 ? 1 : 0 }}
           >
-            {slide.subtitle && (
-              <span className="font-sans text-xs md:text-sm font-bold tracking-[0.25em] uppercase text-brand-red mb-3">
-                {slide.subtitle}
-              </span>
+            {/* Pill Badge */}
+            {slide.badge && (
+              <div
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-[11px] md:text-xs font-bold tracking-widest uppercase mb-3.5 shadow-lg ${
+                  slide.styleType === "bottomAccent"
+                    ? "text-amber-400 border-amber-500/30"
+                    : slide.styleType === "rightAccent"
+                    ? "text-amber-300 border-amber-400/30"
+                    : "text-brand-red border-brand-red/30"
+                }`}
+              >
+                <span>{slide.badge}</span>
+              </div>
             )}
-            <h2 className="font-serif text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
-              {slide.title}
-            </h2>
-            {!slide.hasCTA && <div className="w-16 h-0.5 bg-brand-red mb-4 rounded-full" />}
-            <p className="font-sans text-sm md:text-lg lg:text-xl text-neutral-300/90 leading-relaxed drop-shadow-[0_1px_6px_rgba(0,0,0,0.6)]">
-              {slide.description}
-            </p>
+
+            {/* Title with distinct accent borders based on position */}
+            <div
+              className={`space-y-3 ${
+                slide.styleType === "leftAccent"
+                  ? "border-l-2 border-brand-red pl-5 text-left"
+                  : slide.styleType === "bottomAccent"
+                  ? "border-l-2 border-amber-500 pl-5 text-left"
+                  : slide.styleType === "rightAccent"
+                  ? "border-r-2 border-brand-red pr-5 text-right"
+                  : "text-center"
+              }`}
+            >
+              <h2 className="font-serif text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.95)] drop-shadow-[0_8px_30px_rgba(0,0,0,0.85)]">
+                {slide.title}
+              </h2>
+
+              <p className="font-sans text-sm md:text-lg lg:text-xl text-neutral-200 leading-relaxed font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
+                {slide.description}
+              </p>
+            </div>
+
             {slide.hasCTA && (
               <Link
                 href="/menu"
-                className="mt-6 inline-flex items-center gap-2 border border-cream-light/35 hover:border-cream-light px-8 py-3 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest bg-black/35 hover:bg-black/60 backdrop-blur-md transition-all text-cream-light pointer-events-auto cursor-pointer"
+                className="mt-6 inline-flex items-center gap-2 border border-cream-light/35 hover:border-cream-light px-8 py-3 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest bg-black/40 hover:bg-black/70 backdrop-blur-md transition-all text-cream-light pointer-events-auto cursor-pointer shadow-xl hover:shadow-2xl"
               >
                 Explore Menu
               </Link>
