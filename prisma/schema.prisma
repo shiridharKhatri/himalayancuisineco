@@ -270,3 +270,20 @@ model JobApplication {
   status      String   @default("NEW") // "NEW", "REVIEWED", "INTERVIEWED", "REJECTED", "HIRED"
   createdAt   DateTime @default(now())
 }
+
+model DeliverySetting {
+  id                 String   @id @default("default")
+  restaurantName     String   @default("Himalayan Cuisine")
+  address            String   @default("115 6th St, Glenwood Springs, CO 81601")
+  latitude           Float    @default(39.5505)
+  longitude          Float    @default(-107.3248)
+  maxRadiusMiles     Float    @default(10.0)
+  minOrderAmount     Float    @default(15.0)
+  deliveryFee        Float    @default(5.0)
+  freeDeliveryOver   Float    @default(50.0)
+  isDeliveryEnabled  Boolean  @default(true)
+  enforceRadius      Boolean  @default(true)
+  outOfRangeMessage  String   @default("Sorry, your address is outside our delivery zone. We only deliver within {radius} miles.")
+  updatedAt          DateTime @updatedAt
+}
+

@@ -15,12 +15,15 @@ import {
   CreditCard,
   Plus,
   Minus,
+  AlertTriangle,
+  ShoppingBag,
 } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { useOrderStore } from "@/stores/orderStore";
 import { useUIStore } from "@/stores/uiStore";
 import { Dialog } from "@/components/ui/Dialog";
 import { CuisineLoader } from "@/components/ui/CuisineLoader";
+import { calculateDistanceInMiles } from "@/lib/geo";
 
 export function CheckoutView({ checkoutId }: { checkoutId?: string }) {
   const router = useRouter();
@@ -37,7 +40,8 @@ export function CheckoutView({ checkoutId }: { checkoutId?: string }) {
     setTip,
     applyCoupon,
     removeCoupon,
-    updateQuantity
+    updateQuantity,
+    setDeliveryType,
   } = useCartStore();
   const { placeOrder } = useOrderStore();
   const { addToast } = useUIStore();
@@ -45,10 +49,49 @@ export function CheckoutView({ checkoutId }: { checkoutId?: string }) {
   const { subtotal, tax, deliveryFee, discount, total } = getTotals();
 
   const [hasMounted, setHasMounted] = React.useState(false);
+  const [deliverySettings, setDeliverySettings] = React.useState<{
+    latitude: number;
+    longitude: number;
+    maxRadiusMiles: number;
+    enforceRadius: boolean;
+    outOfRangeMessage: string;
+  } | null>(null);
 
   React.useEffect(() => {
     setHasMounted(true);
+    fetch("/api/delivery-settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.settings) {
+          setDeliverySettings({
+            latitude: data.settings.latitude ?? 39.5505,
+            longitude: data.settings.longitude ?? -107.3248,
+            maxRadiusMiles: data.settings.maxRadiusMiles ?? 10.0,
+            enforceRadius: data.settings.enforceRadius ?? true,
+            outOfRangeMessage:
+              data.settings.outOfRangeMessage ||
+              "Sorry, your address is outside our delivery zone. We only deliver within {radius} miles.",
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  const addressDistance = React.useMemo(() => {
+    if (!deliveryAddress?.lat || !deliveryAddress?.lng || !deliverySettings) return null;
+    return calculateDistanceInMiles(
+      deliverySettings.latitude,
+      deliverySettings.longitude,
+      deliveryAddress.lat,
+      deliveryAddress.lng
+    );
+  }, [deliveryAddress, deliverySettings]);
+
+  const isAddressOutOfRange = React.useMemo(() => {
+    if (addressDistance === null || !deliverySettings) return false;
+    return deliverySettings.enforceRadius && addressDistance > deliverySettings.maxRadiusMiles;
+  }, [addressDistance, deliverySettings]);
+
 
   // Redirect if cart is empty, only after client hydration has completed
   React.useEffect(() => {
@@ -248,6 +291,16 @@ export function CheckoutView({ checkoutId }: { checkoutId?: string }) {
       return;
     }
 
+    if (deliveryType === "DELIVERY" && isAddressOutOfRange) {
+      const errMsg =
+        deliverySettings?.outOfRangeMessage
+          ?.replace("{radius}", deliverySettings.maxRadiusMiles.toFixed(1))
+          ?.replace("{distance}", addressDistance?.toFixed(1) || "") ||
+        "Address is outside our delivery zone. Please switch to Pickup.";
+      addToast(errMsg, "error");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -274,6 +327,11 @@ export function CheckoutView({ checkoutId }: { checkoutId?: string }) {
       });
 
       const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to process order");
+      }
+
       const orderId = data.order?.id || `HC-${Math.floor(100000 + Math.random() * 900000)}`;
 
       placeOrder({
@@ -307,13 +365,12 @@ export function CheckoutView({ checkoutId }: { checkoutId?: string }) {
         }))
       });
 
-      addToast("Order placed successfully!", "success");
       clearCart();
-      setIsSubmitting(false);
-      router.push(`/order/confirmation?orderId=${orderId}`);
-    } catch (err) {
+      router.push(`/order/confirmation/${orderId}`);
+    } catch (err: any) {
       console.error(err);
-      addToast("Failed to place order. Please try again.", "error");
+      addToast(err.message || "Failed to process order. Please try again.", "error");
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -381,12 +438,41 @@ export function CheckoutView({ checkoutId }: { checkoutId?: string }) {
                     </div>
                   </div>
 
+                  {/* Out of Range Error Banner */}
+                  {deliveryType === "DELIVERY" && isAddressOutOfRange && (
+                    <div className="bg-red-50 border-t border-red-200 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-4 w-4 text-[#B51C20] shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-sans text-xs font-bold text-[#B51C20]">
+                            Out of Delivery Range ({addressDistance?.toFixed(1)} miles away)
+                          </p>
+                          <p className="font-sans text-xs text-red-700">
+                            Our maximum delivery radius is {deliverySettings?.maxRadiusMiles} miles. Please switch to Pickup to complete this order.
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeliveryType("PICKUP");
+                          addToast("Switched order to Pickup", "info");
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-[#B51C20] hover:bg-[#9B181B] text-white font-sans text-xs font-bold shrink-0 transition-colors flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                      >
+                        <ShoppingBag className="h-3.5 w-3.5" />
+                        Switch to Pickup
+                      </button>
+                    </div>
+                  )}
+
                   {/* Pink Savings Banner */}
                   <div className="bg-[#FAF0EE] px-4 py-3 border-t border-neutral-warm/30 font-sans text-xs text-charcoal">
                     You&apos;re saving <strong>${savingsAmount}</strong> by ordering directly from us vs. other websites
                   </div>
                 </div>
               </div>
+
 
               {/* 2. Tip Section */}
               <div>

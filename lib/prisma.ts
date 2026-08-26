@@ -3,18 +3,36 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient | undefined };
 
-let prismaClient: PrismaClient;
-
-if (process.env.NODE_ENV === "production") {
-  const adapter = new PrismaBetterSqlite3({ url: "file:./prisma/dev.db" });
-  prismaClient = new PrismaClient({ adapter });
-} else {
-  if (!globalForPrisma.prisma) {
-    const adapter = new PrismaBetterSqlite3({ url: "file:./prisma/dev.db" });
-    globalForPrisma.prisma = new PrismaClient({ adapter });
+function getPrisma(): PrismaClient {
+  if (!globalForPrisma.prisma || !(globalForPrisma.prisma as any).deliverySetting) {
+    try {
+      for (const key of Object.keys(require.cache)) {
+        if (key.includes("@prisma") || key.includes(".prisma")) {
+          delete require.cache[key];
+        }
+      }
+      const { PrismaClient: FreshClient } = require("@prisma/client");
+      const { PrismaBetterSqlite3: FreshAdapter } = require("@prisma/adapter-better-sqlite3");
+      const adapter = new FreshAdapter({ url: "file:./prisma/dev.db" });
+      globalForPrisma.prisma = new FreshClient({ adapter });
+    } catch {
+      const adapter = new PrismaBetterSqlite3({ url: "file:./prisma/dev.db" });
+      globalForPrisma.prisma = new PrismaClient({ adapter });
+    }
   }
-  prismaClient = globalForPrisma.prisma;
+  return globalForPrisma.prisma!;
 }
 
-export const prisma = prismaClient;
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = getPrisma();
+    const val = (client as any)[prop];
+    if (typeof val === "function") {
+      return val.bind(client);
+    }
+    return val;
+  },
+});
+
 export default prisma;
+

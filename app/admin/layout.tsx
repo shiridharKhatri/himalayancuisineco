@@ -19,6 +19,7 @@ import {
   X,
   Bell,
   Search,
+  MapPin,
   ShieldCheck,
 } from "lucide-react";
 
@@ -32,11 +33,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { label: "Menu Items", href: "/admin/menu", icon: UtensilsCrossed },
     { label: "Live Orders", href: "/admin/orders", icon: ShoppingBag },
+    { label: "Delivery Zone", href: "/admin/delivery", icon: MapPin },
     { label: "Reservations", href: "/admin/reservations", icon: CalendarDays },
     { label: "Catering", href: "/admin/catering", icon: Wine },
     { label: "Gift Cards", href: "/admin/gift-cards", icon: Gift },
     { label: "Job Applicants", href: "/admin/careers", icon: Briefcase },
   ];
+
 
   return (
     <div className="min-h-screen bg-[#F4F3EE] text-[#1E1E1E] flex flex-col md:flex-row antialiased font-sans selection:bg-[#B51C20] selection:text-white">

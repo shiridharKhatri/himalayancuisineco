@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { MapPin, PenLine, Navigation, Loader2, Check } from "lucide-react";
+import { MapPin, PenLine, Navigation, Loader2, Check, AlertTriangle, CheckCircle2, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import type { DeliveryAddress } from "@/stores/cartStore";
+import { calculateDistanceInMiles, checkDeliveryRange } from "@/lib/geo";
 
 // Lazy-load map components to avoid SSR issues with Leaflet
 const MapView = React.lazy(() => import("./MapView"));
@@ -14,19 +15,73 @@ interface LocationPickerProps {
   initialAddress?: DeliveryAddress | null;
   onConfirm: (address: DeliveryAddress) => void;
   onCancel?: () => void;
+  onSwitchToPickup?: () => void;
 }
 
 type TabMode = "map" | "manual";
 
-// Restaurant center coordinates (Glenwood Springs, CO)
-const RESTAURANT_CENTER: [number, number] = [39.5505, -107.3248];
+interface DeliverySettings {
+  restaurantName: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  maxRadiusMiles: number;
+  minOrderAmount: number;
+  deliveryFee: number;
+  isDeliveryEnabled: boolean;
+  enforceRadius: boolean;
+  outOfRangeMessage: string;
+}
+
+const DEFAULT_SETTINGS: DeliverySettings = {
+  restaurantName: "Himalayan Cuisine",
+  address: "115 6th St, Glenwood Springs, CO 81601",
+  latitude: 39.5505,
+  longitude: -107.3248,
+  maxRadiusMiles: 10.0,
+  minOrderAmount: 15.0,
+  deliveryFee: 5.0,
+  isDeliveryEnabled: true,
+  enforceRadius: true,
+  outOfRangeMessage:
+    "Sorry, your address is outside our delivery zone. We only deliver within {radius} miles of our restaurant.",
+};
 
 export const LocationPicker: React.FC<LocationPickerProps> = ({
   initialAddress,
   onConfirm,
   onCancel,
+  onSwitchToPickup,
 }) => {
   const [activeTab, setActiveTab] = React.useState<TabMode>("map");
+
+  // Dynamic delivery settings from server
+  const [deliverySettings, setDeliverySettings] = React.useState<DeliverySettings>(DEFAULT_SETTINGS);
+
+  // Fetch delivery settings on mount
+  React.useEffect(() => {
+    fetch("/api/delivery-settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.settings) {
+          setDeliverySettings({
+            restaurantName: data.settings.restaurantName || "Himalayan Cuisine",
+            address: data.settings.address || "115 6th St, Glenwood Springs, CO 81601",
+            latitude: data.settings.latitude ?? 39.5505,
+            longitude: data.settings.longitude ?? -107.3248,
+            maxRadiusMiles: data.settings.maxRadiusMiles ?? 10.0,
+            minOrderAmount: data.settings.minOrderAmount ?? 15.0,
+            deliveryFee: data.settings.deliveryFee ?? 5.0,
+            isDeliveryEnabled: data.settings.isDeliveryEnabled ?? true,
+            enforceRadius: data.settings.enforceRadius ?? true,
+            outOfRangeMessage:
+              data.settings.outOfRangeMessage ||
+              "Sorry, your address is outside our delivery zone. We only deliver within {radius} miles of our restaurant.",
+          });
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch delivery settings, using default", err));
+  }, []);
 
   // Map state
   const [markerPosition, setMarkerPosition] = React.useState<[number, number] | null>(
@@ -43,8 +98,31 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const [state, setState] = React.useState(initialAddress?.state || "CO");
   const [zipCode, setZipCode] = React.useState(initialAddress?.zipCode || "");
 
-  // Validation
+  // Validation & Range Check
   const [errors, setErrors] = React.useState<Record<string, string>>({});
+
+  // Real-time distance calculation
+  const distanceMiles = React.useMemo(() => {
+    if (!markerPosition) return null;
+    return calculateDistanceInMiles(
+      deliverySettings.latitude,
+      deliverySettings.longitude,
+      markerPosition[0],
+      markerPosition[1]
+    );
+  }, [markerPosition, deliverySettings]);
+
+  const isOutOfRange = React.useMemo(() => {
+    if (distanceMiles === null) return false;
+    return distanceMiles > deliverySettings.maxRadiusMiles;
+  }, [distanceMiles, deliverySettings.maxRadiusMiles]);
+
+  const outOfRangeFormattedError = React.useMemo(() => {
+    if (!isOutOfRange || distanceMiles === null) return null;
+    return deliverySettings.outOfRangeMessage
+      .replace("{radius}", deliverySettings.maxRadiusMiles.toFixed(1))
+      .replace("{distance}", distanceMiles.toFixed(1));
+  }, [isOutOfRange, distanceMiles, deliverySettings]);
 
   // Reverse geocode lat/lng → address using free Nominatim
   const reverseGeocode = React.useCallback(async (lat: number, lng: number) => {
@@ -76,6 +154,29 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       setIsGeocoding(false);
     }
   }, []);
+
+  // Forward geocode manual address
+  const forwardGeocodeManual = async (
+    searchAddress: string
+  ): Promise<[number, number] | null> => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          searchAddress
+        )}&limit=1`,
+        { headers: { "Accept-Language": "en" } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.length > 0) {
+          return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        }
+      }
+    } catch (e) {
+      console.warn("Forward geocode error:", e);
+    }
+    return null;
+  };
 
   // Handle map click
   const handleMapClick = React.useCallback(
@@ -117,7 +218,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   }, [reverseGeocode]);
 
   // Validate and confirm
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     const errs: Record<string, string> = {};
     if (!street.trim()) errs.street = "Street address is required";
     if (!city.trim()) errs.city = "City is required";
@@ -126,13 +227,42 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
+    let finalLat = markerPosition?.[0];
+    let finalLng = markerPosition?.[1];
+
+    // If manual address without marker coords, geocode it
+    if (!finalLat || !finalLng) {
+      const coords = await forwardGeocodeManual(`${street}, ${city}, ${state} ${zipCode}`);
+      if (coords) {
+        finalLat = coords[0];
+        finalLng = coords[1];
+        setMarkerPosition(coords);
+      }
+    }
+
+    // Check delivery range
+    if (finalLat && finalLng && deliverySettings.enforceRadius) {
+      const dist = calculateDistanceInMiles(
+        deliverySettings.latitude,
+        deliverySettings.longitude,
+        finalLat,
+        finalLng
+      );
+      if (dist > deliverySettings.maxRadiusMiles) {
+        setErrors({
+          range: `Out of delivery range (${dist.toFixed(1)} mi away). We only deliver within ${deliverySettings.maxRadiusMiles} miles.`,
+        });
+        return;
+      }
+    }
+
     onConfirm({
       street: street.trim(),
       city: city.trim(),
       state,
       zipCode: zipCode.trim(),
-      lat: markerPosition?.[0],
-      lng: markerPosition?.[1],
+      lat: finalLat,
+      lng: finalLng,
     });
   };
 
@@ -225,8 +355,14 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
               }
             >
               <MapView
-                center={markerPosition || RESTAURANT_CENTER}
+                center={
+                  markerPosition || [deliverySettings.latitude, deliverySettings.longitude]
+                }
                 markerPosition={markerPosition}
+                hubPosition={[deliverySettings.latitude, deliverySettings.longitude]}
+                hubName={deliverySettings.restaurantName}
+                radiusMiles={deliverySettings.maxRadiusMiles}
+                isOutOfRange={isOutOfRange}
                 onMapClick={handleMapClick}
                 onMarkerDragEnd={handleMarkerDragEnd}
               />
@@ -235,10 +371,48 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             {/* Click hint overlay (only when no marker placed) */}
             {!markerPosition && !isGeocoding && (
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-charcoal/80 text-cream-light px-4 py-2 rounded-full font-sans text-xs font-medium shadow-lg pointer-events-none">
-                Click on the map to drop a pin
+                Click on the map within the circle to drop a pin
               </div>
             )}
+
+            {/* Delivery boundary badge */}
+            <div className="absolute top-3 right-3 bg-cream-light/95 backdrop-blur-xs px-2.5 py-1 rounded-lg border border-neutral-warm/50 text-[10px] font-sans font-semibold text-charcoal shadow-xs pointer-events-none">
+              Max Radius: {deliverySettings.maxRadiusMiles} mi
+            </div>
           </div>
+
+          {/* OUT OF RANGE ERROR BANNER */}
+          {isOutOfRange && (
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-3.5 space-y-2 animate-fade-in">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="h-5 w-5 text-[#B51C20] shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-sans text-xs font-bold text-[#B51C20]">
+                    Out of Delivery Range ({distanceMiles?.toFixed(1)} miles away)
+                  </p>
+                  <p className="font-sans text-xs text-red-700 leading-relaxed">
+                    {outOfRangeFormattedError}
+                  </p>
+                </div>
+              </div>
+
+              {onSwitchToPickup && (
+                <div className="pt-1 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={onSwitchToPickup}
+                    className="px-3 py-1.5 rounded-xl bg-[#B51C20] hover:bg-[#9B181B] text-white font-sans text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ShoppingBag className="h-3.5 w-3.5" />
+                    Switch to Pickup
+                  </button>
+                  <span className="text-[11px] text-neutral-500 font-sans">
+                    (No delivery fee • Ready in 20-30 mins)
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Geocode error */}
           {geocodeError && (
@@ -250,15 +424,41 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           {/* Resolved address preview (when geocoded) */}
           {street && !isGeocoding && (
             <div className="bg-cream-light border border-neutral-warm/40 rounded-2xl p-4 space-y-3">
-              <div className="flex items-start gap-2">
-                <MapPin className="h-4 w-4 text-brand-red mt-0.5 shrink-0" />
-                <div className="font-sans text-sm text-charcoal">
-                  <p className="font-semibold">{street}</p>
-                  <p className="text-muted-gray text-xs mt-0.5">
-                    {city}{city && state ? ", " : ""}{state} {zipCode}
-                  </p>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start gap-2">
+                  <MapPin className={`h-4 w-4 mt-0.5 shrink-0 ${isOutOfRange ? "text-red-500" : "text-brand-red"}`} />
+                  <div className="font-sans text-sm text-charcoal">
+                    <p className="font-semibold">{street}</p>
+                    <p className="text-muted-gray text-xs mt-0.5">
+                      {city}{city && state ? ", " : ""}{state} {zipCode}
+                    </p>
+                  </div>
                 </div>
+
+                {/* Distance Badge */}
+                {distanceMiles !== null && (
+                  <span
+                    className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold font-sans flex items-center gap-1 ${
+                      isOutOfRange
+                        ? "bg-red-100 text-red-800 border border-red-200"
+                        : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                    }`}
+                  >
+                    {isOutOfRange ? (
+                      <>
+                        <AlertTriangle className="h-3 w-3" />
+                        {distanceMiles.toFixed(1)} mi (Out)
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-3 w-3" />
+                        {distanceMiles.toFixed(1)} mi (In Zone)
+                      </>
+                    )}
+                  </span>
+                )}
               </div>
+
               {/* Allow editing resolved address */}
               <div className="space-y-3 pt-2 border-t border-neutral-warm/30">
                 <p className="font-sans text-[10px] uppercase tracking-wider text-muted-gray font-semibold">
@@ -334,11 +534,31 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         </div>
       )}
 
+      {/* General range error */}
+      {errors.range && (
+        <div className="bg-red-50 border border-red-200 text-[#B51C20] rounded-xl p-3 text-xs font-sans font-medium flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <span>{errors.range}</span>
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex items-center gap-3 pt-2">
-        <Button type="button" variant="primary" className="flex-1" onClick={handleConfirm}>
+        <Button
+          type="button"
+          variant="primary"
+          className={`flex-1 ${
+            isOutOfRange && deliverySettings.enforceRadius
+              ? "bg-neutral-400 hover:bg-neutral-500 cursor-not-allowed"
+              : ""
+          }`}
+          onClick={handleConfirm}
+          disabled={isOutOfRange && deliverySettings.enforceRadius}
+        >
           <Check className="h-4 w-4 mr-2" />
-          Confirm Address
+          {isOutOfRange && deliverySettings.enforceRadius
+            ? "Out of Delivery Range"
+            : "Confirm Address"}
         </Button>
         {onCancel && (
           <Button type="button" variant="ghost" onClick={onCancel}>
@@ -349,3 +569,4 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     </div>
   );
 };
+

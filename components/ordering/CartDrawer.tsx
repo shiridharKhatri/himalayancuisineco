@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Plus, Minus, Trash2, ShoppingBag, MapPin, ChevronRight, ChevronDown, ArrowRight } from "lucide-react";
+import { Plus, Minus, Trash2, ShoppingBag, MapPin, ChevronRight, ChevronDown, ArrowRight, AlertTriangle } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { useUIStore } from "@/stores/uiStore";
 import { Drawer } from "@/components/ui/Drawer";
@@ -12,6 +12,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { LocationPicker } from "@/components/ordering/LocationPicker";
 import type { DeliveryAddress } from "@/stores/cartStore";
+import { calculateDistanceInMiles } from "@/lib/geo";
 
 export const CartDrawer: React.FC = () => {
   const router = useRouter();
@@ -35,6 +36,43 @@ export const CartDrawer: React.FC = () => {
 
   const [promoInput, setPromoInput] = React.useState("");
   const [showLocationPicker, setShowLocationPicker] = React.useState(false);
+  const [deliverySettings, setDeliverySettings] = React.useState<{
+    latitude: number;
+    longitude: number;
+    maxRadiusMiles: number;
+    enforceRadius: boolean;
+  } | null>(null);
+
+  React.useEffect(() => {
+    fetch("/api/delivery-settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.settings) {
+          setDeliverySettings({
+            latitude: data.settings.latitude ?? 39.5505,
+            longitude: data.settings.longitude ?? -107.3248,
+            maxRadiusMiles: data.settings.maxRadiusMiles ?? 10.0,
+            enforceRadius: data.settings.enforceRadius ?? true,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const addressDistance = React.useMemo(() => {
+    if (!deliveryAddress?.lat || !deliveryAddress?.lng || !deliverySettings) return null;
+    return calculateDistanceInMiles(
+      deliverySettings.latitude,
+      deliverySettings.longitude,
+      deliveryAddress.lat,
+      deliveryAddress.lng
+    );
+  }, [deliveryAddress, deliverySettings]);
+
+  const isAddressOutOfRange = React.useMemo(() => {
+    if (addressDistance === null || !deliverySettings) return false;
+    return deliverySettings.enforceRadius && addressDistance > deliverySettings.maxRadiusMiles;
+  }, [addressDistance, deliverySettings]);
 
   // Generate next 7 days dynamically
   const datesList = React.useMemo(() => {
@@ -103,6 +141,12 @@ export const CartDrawer: React.FC = () => {
   };
 
   const handleCheckout = () => {
+    if (deliveryType === "DELIVERY" && isAddressOutOfRange) {
+      addToast("Selected address is outside our delivery zone. Please choose a closer address or switch to Pickup.", "error");
+      setShowLocationPicker(true);
+      return;
+    }
+
     setCartOpen(false);
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let checkoutId = "";
@@ -127,6 +171,23 @@ export const CartDrawer: React.FC = () => {
                 <span className="font-sans text-lg font-bold text-charcoal">${subtotal.toFixed(2)}</span>
               </div>
 
+              {/* Out of range alert in footer if delivery chosen */}
+              {deliveryType === "DELIVERY" && isAddressOutOfRange && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-2.5 flex items-center justify-between text-xs text-red-800">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <AlertTriangle className="h-4 w-4 text-[#B51C20] shrink-0" />
+                    <span className="truncate font-medium">Out of delivery range ({addressDistance?.toFixed(1)} mi)</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryType("PICKUP")}
+                    className="font-bold underline text-[#B51C20] shrink-0 ml-2 cursor-pointer"
+                  >
+                    Switch to Pickup
+                  </button>
+                </div>
+              )}
+
               {/* Points & Checkout Card */}
               <div className="bg-[#FAF0EE] rounded-2xl p-2.5 sm:p-3 flex flex-col items-center gap-2">
                 <p className="font-sans text-xs text-charcoal text-center pt-0.5">
@@ -134,9 +195,17 @@ export const CartDrawer: React.FC = () => {
                 </p>
                 <button
                   onClick={handleCheckout}
-                  className="w-full h-11 sm:h-12 flex items-center justify-center gap-1.5 font-sans font-semibold text-sm rounded-xl bg-[#B51C20] hover:bg-[#9B181B] text-white border-0 cursor-pointer transition-colors"
+                  className={`w-full h-11 sm:h-12 flex items-center justify-center gap-1.5 font-sans font-semibold text-sm rounded-xl text-white border-0 cursor-pointer transition-colors ${
+                    deliveryType === "DELIVERY" && isAddressOutOfRange
+                      ? "bg-neutral-500 hover:bg-neutral-600"
+                      : "bg-[#B51C20] hover:bg-[#9B181B]"
+                  }`}
                 >
-                  <span>Go to checkout</span>
+                  <span>
+                    {deliveryType === "DELIVERY" && isAddressOutOfRange
+                      ? "Fix Address to Checkout"
+                      : "Go to checkout"}
+                  </span>
                   <ArrowRight className="h-4 w-4 shrink-0 stroke-[2.5]" />
                 </button>
               </div>
@@ -144,6 +213,7 @@ export const CartDrawer: React.FC = () => {
           ) : undefined
         }
       >
+
         <div className="flex flex-col h-full animate-fade-in">
           {/* Cart items list */}
           {items.length === 0 ? (
@@ -341,8 +411,14 @@ export const CartDrawer: React.FC = () => {
             setShowLocationPicker(false);
           }}
           onCancel={() => setShowLocationPicker(false)}
+          onSwitchToPickup={() => {
+            setDeliveryType("PICKUP");
+            setShowLocationPicker(false);
+            addToast("Switched order mode to Pickup", "info");
+          }}
         />
       </Dialog>
+
 
       {/* Order Time Dialog - MATCHING SCREENSHOT EXACTLY */}
       <Dialog
