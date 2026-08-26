@@ -11,9 +11,23 @@ export const VideoHero: React.FC = () => {
   const canvasRef = React.useRef<CanvasSequenceRef>(null);
   const textRefs = React.useRef<(HTMLDivElement | null)[]>([]);
 
+  // Refs for bottom-left scroll-reactive circular progress
+  const progressCircleRef = React.useRef<SVGCircleElement>(null);
+  const progressTextRef = React.useRef<HTMLSpanElement>(null);
+  const dishLabelRef = React.useRef<HTMLSpanElement>(null);
+  const dishIndexRef = React.useRef<HTMLSpanElement>(null);
+
   const totalFrames = 240;
   const startFrame = 0;
   const endFrame = 239;
+
+  const dishStages = [
+    { name: "Jhol Momo", index: "01" },
+    { name: "Crispy Momo", index: "02" },
+    { name: "Tandoori Grill", index: "03" },
+    { name: "Royal Biryani", index: "04" },
+    { name: "Himalayan Curry", index: "05" },
+  ];
 
   React.useEffect(() => {
     if (!containerRef.current) return;
@@ -22,6 +36,8 @@ export const VideoHero: React.FC = () => {
     gsap.registerPlugin(ScrollTrigger);
 
     const frameObj = { index: startFrame };
+    const radius = 15;
+    const circumference = 2 * Math.PI * radius;
 
     // GSAP context helps with clean state reversion on component unmount
     const ctx = gsap.context(() => {
@@ -31,6 +47,33 @@ export const VideoHero: React.FC = () => {
           start: "top top",
           end: "bottom bottom",
           scrub: 0.3, // Fast, responsive scrub
+          onUpdate: (self) => {
+            const p = self.progress; // 0 to 1
+            const offset = circumference - p * circumference;
+
+            if (progressCircleRef.current) {
+              progressCircleRef.current.style.strokeDashoffset = `${offset}`;
+            }
+
+            if (progressTextRef.current) {
+              progressTextRef.current.textContent = `${Math.round(p * 100)}%`;
+            }
+
+            // Determine active stage based on scroll progress
+            const stageIdx = Math.min(
+              dishStages.length - 1,
+              Math.floor(p * dishStages.length)
+            );
+            const currentStage = dishStages[stageIdx];
+
+            if (dishLabelRef.current && dishLabelRef.current.textContent !== currentStage.name) {
+              dishLabelRef.current.textContent = currentStage.name;
+            }
+
+            if (dishIndexRef.current && dishIndexRef.current.textContent !== currentStage.index) {
+              dishIndexRef.current.textContent = `${currentStage.index} / 05`;
+            }
+          },
         },
       });
 
@@ -188,7 +231,87 @@ export const VideoHero: React.FC = () => {
             )}
           </div>
         ))}
+
+        {/* BOTTOM-LEFT SCROLL-REACTIVE CIRCULAR PROGRESS TRACKER */}
+        <div
+          className="absolute bottom-8 left-6 md:left-12 z-30 flex items-center gap-3.5 px-4 py-2.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-white shadow-2xl select-none group hover:bg-black/80 hover:border-brand-red/50 transition-all duration-300 pointer-events-auto cursor-pointer"
+          onClick={() => {
+            if (containerRef.current) {
+              const currentScroll = window.scrollY;
+              const containerTop = containerRef.current.offsetTop;
+              const containerHeight = containerRef.current.offsetHeight;
+              const step = containerHeight / 5;
+              const nextTarget = Math.min(
+                containerTop + containerHeight,
+                Math.floor((currentScroll - containerTop) / step + 1) * step + containerTop
+              );
+              window.scrollTo({ top: nextTarget, behavior: "smooth" });
+            }
+          }}
+          title="Scroll or click to advance culinary story"
+        >
+          {/* Circular Progress SVG */}
+          <div className="relative w-9 h-9 flex items-center justify-center shrink-0">
+            <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
+              {/* Background Track */}
+              <circle
+                cx="18"
+                cy="18"
+                r="15"
+                fill="none"
+                stroke="rgba(255, 255, 255, 0.18)"
+                strokeWidth="2.5"
+              />
+              {/* Progress Ring */}
+              <circle
+                ref={progressCircleRef}
+                cx="18"
+                cy="18"
+                r="15"
+                fill="none"
+                stroke="#B51C20"
+                strokeWidth="2.5"
+                strokeDasharray={`${2 * Math.PI * 15}`}
+                strokeDashoffset={`${2 * Math.PI * 15}`}
+                strokeLinecap="round"
+                style={{
+                  transition: "stroke-dashoffset 0.1s linear",
+                }}
+              />
+            </svg>
+            {/* Center Percentage */}
+            <span
+              ref={progressTextRef}
+              className="absolute font-mono text-[9px] font-extrabold text-cream-light tracking-tight"
+            >
+              0%
+            </span>
+          </div>
+
+          {/* Dish / Story Stage Label */}
+          <div className="flex flex-col text-left pr-1.5">
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-red animate-pulse" />
+              <span
+                ref={dishLabelRef}
+                className="font-sans text-xs font-bold text-cream-light tracking-wide uppercase truncate max-w-[130px]"
+              >
+                Jhol Momo
+              </span>
+              <span
+                ref={dishIndexRef}
+                className="font-mono text-[9px] font-bold text-neutral-400 bg-white/10 px-1.5 py-0.2 rounded"
+              >
+                01 / 05
+              </span>
+            </div>
+            <span className="font-sans text-[10px] text-neutral-400 font-medium mt-0.5">
+              Scroll down to explore story
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
+
