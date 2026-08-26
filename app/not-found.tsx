@@ -3,7 +3,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Compass, ArrowRight, UtensilsCrossed, Home, Calendar } from "lucide-react";
+import { ArrowRight, UtensilsCrossed, Home, Calendar } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -18,15 +18,10 @@ export default function NotFound() {
           </Badge>
 
           {/* 404 Large Numeric Indicator */}
-          <div className="relative">
-            <span className="font-serif text-8xl md:text-9xl font-extrabold tracking-tight text-neutral-200/80 select-none block leading-none">
+          <div>
+            <span className="font-serif text-8xl md:text-9xl font-extrabold tracking-tight text-neutral-300/80 select-none block leading-none">
               404
             </span>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-14 h-14 rounded-2xl bg-[#B51C20]/10 text-[#B51C20] flex items-center justify-center shadow-xs">
-                <Compass className="h-7 w-7 animate-spin-slow" />
-              </div>
-            </div>
           </div>
 
           {/* Heading and Description */}
