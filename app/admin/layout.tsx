@@ -27,10 +27,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const { data: session } = useSession();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false);
+  const [activeOrdersCount, setActiveOrdersCount] = React.useState<number>(0);
+
+  // Live order telemetry for sidebar badge
+  React.useEffect(() => {
+    let isMounted = true;
+    const fetchLiveCount = async () => {
+      try {
+        const res = await fetch("/api/admin/stats");
+        if (res.ok) {
+          const json = await res.json();
+          if (isMounted && json.stats?.activeOrdersCount !== undefined) {
+            setActiveOrdersCount(json.stats.activeOrdersCount);
+          }
+        }
+      } catch (err) {
+        // silent
+      }
+    };
+    fetchLiveCount();
+    const interval = setInterval(fetchLiveCount, 15000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   const mainNavItems = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { label: "Orders", href: "/admin/orders", icon: ShoppingBag, badge: "46" },
+    {
+      label: "Orders",
+      href: "/admin/orders",
+      icon: ShoppingBag,
+      badge: activeOrdersCount > 0 ? String(activeOrdersCount) : undefined,
+    },
     { label: "Products / Menu", href: "/admin/menu", icon: UtensilsCrossed },
     { label: "Delivery Zone", href: "/admin/delivery", icon: MapPin },
     { label: "Reservations", href: "/admin/reservations", icon: CalendarDays },
