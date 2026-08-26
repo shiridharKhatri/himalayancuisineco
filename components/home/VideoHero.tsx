@@ -15,7 +15,6 @@ export const VideoHero: React.FC = () => {
   const progressCircleRef = React.useRef<SVGCircleElement>(null);
   const progressTextRef = React.useRef<HTMLSpanElement>(null);
   const dishLabelRef = React.useRef<HTMLSpanElement>(null);
-  const dishIndexRef = React.useRef<HTMLSpanElement>(null);
 
   const totalFrames = 240;
   const startFrame = 0;
@@ -68,10 +67,6 @@ export const VideoHero: React.FC = () => {
 
             if (dishLabelRef.current && dishLabelRef.current.textContent !== currentStage.name) {
               dishLabelRef.current.textContent = currentStage.name;
-            }
-
-            if (dishIndexRef.current && dishIndexRef.current.textContent !== currentStage.index) {
-              dishIndexRef.current.textContent = `${currentStage.index} / 05`;
             }
           },
         },
@@ -290,21 +285,12 @@ export const VideoHero: React.FC = () => {
 
           {/* Dish / Story Stage Label */}
           <div className="flex flex-col text-left pr-1.5">
-            <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-red animate-pulse" />
-              <span
-                ref={dishLabelRef}
-                className="font-sans text-xs font-bold text-cream-light tracking-wide uppercase truncate max-w-[130px]"
-              >
-                Jhol Momo
-              </span>
-              <span
-                ref={dishIndexRef}
-                className="font-mono text-[9px] font-bold text-neutral-400 bg-white/10 px-1.5 py-0.2 rounded"
-              >
-                01 / 05
-              </span>
-            </div>
+            <span
+              ref={dishLabelRef}
+              className="font-sans text-xs font-bold text-cream-light tracking-wide uppercase truncate max-w-[140px]"
+            >
+              Jhol Momo
+            </span>
             <span className="font-sans text-[10px] text-neutral-400 font-medium mt-0.5">
               Scroll down to explore story
             </span>
