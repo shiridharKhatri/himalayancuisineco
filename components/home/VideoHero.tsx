@@ -157,28 +157,28 @@ export const VideoHero: React.FC = () => {
       hasCTA: true,
     },
     {
-      badge: "🥟 Handcrafted Dumplings",
+      badge: "Handcrafted Dumplings",
       title: "Golden, Crispy Perfection",
       description: "Paired with bold, spicy dipping sauce for the ultimate crunch.",
       positionClass: "top-28 md:top-36 left-6 md:left-20 text-left items-start max-w-xl",
       styleType: "leftAccent",
     },
     {
-      badge: "🔥 Clay Oven Classics",
+      badge: "Clay Oven Classics",
       title: "Flame-Grilled Excellence",
       description: "Marinated in rich Himalayan spices and seared to smoky perfection.",
       positionClass: "bottom-24 md:bottom-32 left-6 md:left-20 text-left items-start max-w-xl",
       styleType: "bottomAccent",
     },
     {
-      badge: "✨ Royal Rice Dishes",
+      badge: "Royal Rice Dishes",
       title: "Aromatic & Rich",
       description: "Long-grain basmati cooked with authentic herbs, saffron, and fried onions.",
       positionClass: "top-28 md:top-36 right-6 md:right-20 text-right items-end max-w-xl",
       styleType: "rightAccent",
     },
     {
-      badge: "🍲 Slow-Cooked Curries",
+      badge: "Slow-Cooked Curries",
       title: "Slow-Cooked Goodness",
       description: "Tender meat and fresh paneer infused with deep, savory spice blends.",
       positionClass:
