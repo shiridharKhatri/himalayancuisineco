@@ -287,3 +287,34 @@ model DeliverySetting {
   updatedAt          DateTime @updatedAt
 }
 
+model Event {
+  id          String         @id @default(cuid())
+  title       String
+  tagline     String?
+  type        String         @default("Festival Feast") // "Festival Feast", "Culinary Class", "Tasting Dinner"
+  schedule    String         // e.g. "October 12, 2026 @ 6:30 PM"
+  price       Float          @default(45.0)
+  capacity    Int            @default(40)
+  location    String         @default("115 6th St, Glenwood Springs, CO 81601")
+  image       String         @default("/images/event_dashain.jpg")
+  description String
+  isPublished Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  bookings    EventBooking[]
+}
+
+model EventBooking {
+  id            String   @id @default(cuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  customerName  String
+  customerEmail String
+  customerPhone String
+  ticketsCount  Int      @default(1)
+  totalPaid     Float    @default(0.0)
+  notes         String?
+  status        String   @default("CONFIRMED") // "CONFIRMED", "CANCELLED", "ATTENDED"
+  createdAt     DateTime @default(now())
+}
+
+

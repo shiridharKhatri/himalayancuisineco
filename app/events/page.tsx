@@ -17,27 +17,72 @@ import { Select } from "@/components/ui/Select";
 export default function EventsPage() {
   const { addToast } = useUIStore();
 
-  const [bookingEvent, setBookingEvent] = React.useState<HimalayanEvent | null>(null);
+  const [events, setEvents] = React.useState<any[]>(MOCK_EVENTS);
+  const [bookingEvent, setBookingEvent] = React.useState<any | null>(null);
   const [ticketCount, setTicketCount] = React.useState(2);
+  const [guestName, setGuestName] = React.useState("");
+  const [guestEmail, setGuestEmail] = React.useState("");
+  const [guestPhone, setGuestPhone] = React.useState("");
+  const [notes, setNotes] = React.useState("");
   const [isBooking, setIsBooking] = React.useState(false);
 
-  const handleBookTickets = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsBooking(true);
+  React.useEffect(() => {
+    fetch("/api/events")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.events && data.events.length > 0) {
+          setEvents(data.events);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch events", err));
+  }, []);
 
-    setTimeout(() => {
+  const handleBookTickets = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bookingEvent) return;
+    if (!guestName.trim() || !guestEmail.trim() || !guestPhone.trim()) {
+      addToast("Please provide your name, email, and phone number", "error");
+      return;
+    }
+
+    setIsBooking(true);
+    try {
+      const res = await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId: bookingEvent.id,
+          customerName: guestName,
+          customerEmail: guestEmail,
+          customerPhone: guestPhone,
+          ticketsCount: ticketCount,
+          totalPaid: (bookingEvent.price || 45.0) * ticketCount,
+          notes,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to book tickets");
+
       addToast(
-        `Successfully booked ${ticketCount} seats for ${bookingEvent?.title}! Confirmation email sent.`,
+        `Successfully booked ${ticketCount} seat${ticketCount === 1 ? "" : "s"} for ${bookingEvent.title}! Confirmation sent to ${guestEmail}.`,
         "success"
       );
-      setIsBooking(false);
       setBookingEvent(null);
       setTicketCount(2);
-    }, 1500);
+      setGuestName("");
+      setGuestEmail("");
+      setGuestPhone("");
+      setNotes("");
+    } catch (err: any) {
+      addToast(err.message || "Failed to book tickets", "error");
+    } finally {
+      setIsBooking(false);
+    }
   };
 
-  const getEventCoverImage = (id: string) => {
-    return id === "evt-dashain-feast"
+  const getEventCoverImage = (evt: any) => {
+    if (evt.image && evt.image.startsWith("/")) return evt.image;
+    return evt.id === "evt-dashain-feast"
       ? "/images/event_dashain.jpg"
       : "/images/event_masterclass.jpg";
   };
@@ -63,7 +108,7 @@ export default function EventsPage() {
       <section className="py-20 md:py-28 bg-cream-base">
         <div className="mx-auto max-w-[1200px] px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {MOCK_EVENTS.map((evt) => (
+            {events.map((evt) => (
               <div
                 key={evt.id}
                 className="group flex flex-col bg-cream-light border border-neutral-warm/40 rounded-[20px] overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.01)] hover:-translate-y-1.5 hover:shadow-[0_16px_40px_rgba(21,21,21,0.04)] hover:border-brand-red/30 transition-all duration-300 justify-between"
@@ -72,7 +117,7 @@ export default function EventsPage() {
                   {/* Cover Image Container */}
                   <div className="relative aspect-[16/10] w-full overflow-hidden bg-cream-dark border-b border-neutral-warm/20">
                     <Image
-                      src={getEventCoverImage(evt.id)}
+                      src={getEventCoverImage(evt)}
                       alt={evt.title}
                       fill
                       className="object-cover scale-100 group-hover:scale-105 transition-transform duration-700"
@@ -80,7 +125,7 @@ export default function EventsPage() {
                     />
                     {/* Floating Type Badge */}
                     <span className="absolute top-4 left-4 font-sans text-[10px] uppercase font-bold tracking-widest text-cream-light bg-brand-red px-3 py-1.5 rounded-full shadow-md z-10">
-                      {evt.type}
+                      {evt.type || "Special Event"}
                     </span>
                   </div>
 
@@ -108,8 +153,8 @@ export default function EventsPage() {
 
                 {/* Footer Actions */}
                 <div className="px-8 pb-8 pt-4 border-t border-neutral-warm/20 flex justify-between items-center bg-cream-light/60">
-                  <span className="font-sans text-[10px] text-brand-red font-bold uppercase tracking-wider">
-                    Limited Seats Remaining
+                  <span className="font-sans text-xs text-charcoal font-bold">
+                    ${(evt.price || 45).toFixed(2)} / seat
                   </span>
                   <Button
                     onClick={() => setBookingEvent(evt)}
@@ -165,38 +210,97 @@ export default function EventsPage() {
         title={bookingEvent ? `Reserve Seats: ${bookingEvent.title}` : ""}
       >
         {bookingEvent && (
-          <form onSubmit={handleBookTickets} className="space-y-5 text-left">
-            <div className="bg-cream-dark/50 border border-neutral-warm rounded-sm px-4 py-3 text-xs text-muted-gray leading-normal mb-2">
-              <strong>Event:</strong> {bookingEvent.title} <br />
-              <strong>Schedule:</strong> {bookingEvent.schedule}
+          <form onSubmit={handleBookTickets} className="space-y-4 text-left font-sans text-xs">
+            <div className="bg-cream-dark/50 border border-neutral-warm rounded-2xl p-4 text-xs text-muted-gray leading-normal space-y-1">
+              <p className="font-bold text-charcoal text-sm">{bookingEvent.title}</p>
+              <p><strong>Date &amp; Time:</strong> {bookingEvent.schedule}</p>
+              <p><strong>Price:</strong> ${(bookingEvent.price || 45).toFixed(2)} per ticket</p>
             </div>
 
-            <Select
-              label="Party Size / Seats"
-              value={ticketCount.toString()}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setTicketCount(parseInt(e.target.value) || 2)}
-              options={[
-                { value: "1", label: "1 Ticket" },
-                { value: "2", label: "2 Tickets" },
-                { value: "3", label: "3 Tickets" },
-                { value: "4", label: "4 Tickets" },
-                { value: "5", label: "5 Tickets" },
-                { value: "6", label: "6 Tickets" },
-              ]}
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-charcoal uppercase tracking-wider text-[10px] mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  placeholder="Your full name"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-warm bg-white text-xs focus:outline-none focus:ring-2 focus:ring-brand-red"
+                />
+              </div>
 
-            <div className="text-xs text-muted-gray leading-relaxed">
-              Ticket reservation is complimentary. You will pay for the menu cost at the venue.
+              <div>
+                <label className="block font-bold text-charcoal uppercase tracking-wider text-[10px] mb-1">
+                  Party Size / Seats
+                </label>
+                <select
+                  value={ticketCount}
+                  onChange={(e) => setTicketCount(parseInt(e.target.value, 10) || 1)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-warm bg-white text-xs focus:outline-none focus:ring-2 focus:ring-brand-red cursor-pointer"
+                >
+                  {[1, 2, 3, 4, 5, 6, 8, 10].map((num) => (
+                    <option key={num} value={num}>
+                      {num} {num === 1 ? "Ticket" : "Tickets"} (${((bookingEvent.price || 45) * num).toFixed(2)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-charcoal uppercase tracking-wider text-[10px] mb-1">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  placeholder="your.email@example.com"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-warm bg-white text-xs focus:outline-none focus:ring-2 focus:ring-brand-red"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-charcoal uppercase tracking-wider text-[10px] mb-1">
+                  Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={guestPhone}
+                  onChange={(e) => setGuestPhone(e.target.value)}
+                  placeholder="(970) 555-0199"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-warm bg-white text-xs focus:outline-none focus:ring-2 focus:ring-brand-red"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold text-charcoal uppercase tracking-wider text-[10px] mb-1">
+                Dietary Requests or Special Notes
+              </label>
+              <textarea
+                rows={2}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Vegetarian, gluten-free, celebrating an anniversary..."
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-warm bg-white text-xs focus:outline-none focus:ring-2 focus:ring-brand-red resize-none"
+              />
             </div>
 
             <Button
               type="submit"
               variant="primary"
               size="lg"
-              className="w-full mt-4"
+              className="w-full mt-3 rounded-full text-xs font-bold uppercase tracking-wider"
               isLoading={isBooking}
             >
-              Confirm Tickets Reservation
+              Confirm RSVP &bull; ${((bookingEvent.price || 45) * ticketCount).toFixed(2)}
             </Button>
           </form>
         )}

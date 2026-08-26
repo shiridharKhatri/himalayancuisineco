@@ -67,6 +67,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   const secondaryNavItems = [
+    { label: "Events & Dinners", href: "/admin/events", icon: CalendarDays },
     { label: "Catering", href: "/admin/catering", icon: Wine },
     { label: "Gift Cards", href: "/admin/gift-cards", icon: Gift },
     { label: "Careers & Hiring", href: "/admin/careers", icon: Briefcase },
