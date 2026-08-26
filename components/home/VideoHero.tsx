@@ -46,7 +46,7 @@ export const VideoHero: React.FC = () => {
           trigger: containerRef.current,
           start: "top top",
           end: "bottom bottom",
-          scrub: 0.3, // Fast, responsive scrub
+          scrub: 0.15, // Snappy, responsive scrub without lag
           onUpdate: (self) => {
             const p = self.progress; // 0 to 1
             const offset = circumference - p * circumference;
@@ -89,13 +89,13 @@ export const VideoHero: React.FC = () => {
         0
       );
 
-      // 2. Synchronize floating text fades to only show when the dish bowl has settled in frame
+      // 2. Synchronize floating text fades smoothly across the entire scroll journey (no empty gaps)
       const timings = [
-        { enterStart: 0.0, enterEnd: 0.0, exitStart: 0.2, exitEnd: 0.5 }, // Jhol Momo
-        { enterStart: 2.4, enterEnd: 2.7, exitStart: 3.3, exitEnd: 3.6 }, // Fried Momo
-        { enterStart: 4.5, enterEnd: 4.8, exitStart: 5.4, exitEnd: 5.7 }, // Tandoori Chicken
-        { enterStart: 6.6, enterEnd: 6.9, exitStart: 7.5, exitEnd: 7.8 }, // Biryani
-        { enterStart: 8.7, enterEnd: 9.0, exitStart: 9.5, exitEnd: 9.8 }, // Rogan Josh
+        { enterStart: 0.0, enterEnd: 0.0, exitStart: 1.5, exitEnd: 2.0 }, // Jhol Momo
+        { enterStart: 1.8, enterEnd: 2.3, exitStart: 3.6, exitEnd: 4.1 }, // Fried Momo
+        { enterStart: 3.9, enterEnd: 4.4, exitStart: 5.7, exitEnd: 6.2 }, // Tandoori Chicken
+        { enterStart: 6.0, enterEnd: 6.5, exitStart: 7.8, exitEnd: 8.3 }, // Biryani
+        { enterStart: 8.1, enterEnd: 8.6, exitStart: 9.9, exitEnd: 10.0 }, // Rogan Josh
       ];
 
       textRefs.current.forEach((textEl, index) => {
@@ -198,7 +198,7 @@ export const VideoHero: React.FC = () => {
   ];
 
   return (
-    <div ref={containerRef} className="relative w-full h-[900vh] bg-charcoal">
+    <div ref={containerRef} className="relative w-full h-[420vh] bg-charcoal">
       <div className="sticky top-0 left-0 w-full h-screen overflow-hidden bg-black select-none">
         {/* Covering Canvas Sequence */}
         <CanvasSequence

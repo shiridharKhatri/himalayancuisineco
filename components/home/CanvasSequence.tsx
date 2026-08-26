@@ -59,67 +59,69 @@ export const CanvasSequence = React.forwardRef<CanvasSequenceRef, CanvasSequence
     const draw = (index: number, force = false) => {
       targetFrameRef.current = Math.max(0, Math.min(index, totalFrames - 1));
 
-      if (rafIdRef.current !== null && !force) return;
-
-      if (force && rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current);
-        rafIdRef.current = null;
-      }
-
-      const performDraw = () => {
-        rafIdRef.current = null;
-        const currentTarget = targetFrameRef.current;
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        // Ensure canvas has physical dimensions
-        if (canvas.width === 0 || canvas.height === 0) {
-          const rect = canvas.getBoundingClientRect();
-          const dpr = Math.min(window.devicePixelRatio || 1, 2);
-          canvas.width = Math.round((rect.width || window.innerWidth) * dpr);
-          canvas.height = Math.round((rect.height || window.innerHeight) * dpr);
-        }
-
-        if (!force && currentTarget === lastDrawnFrameRef.current) return;
-
-        const img = findBestFrame(currentTarget);
-        if (!img || img.naturalWidth === 0) return;
-
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const imgWidth = img.naturalWidth;
-        const imgHeight = img.naturalHeight;
-
-        const canvasRatio = canvasWidth / canvasHeight;
-        const imgRatio = imgWidth / imgHeight;
-
-        let drawWidth, drawHeight, offsetX, offsetY;
-
-        // Object-fit cover algorithm
-        if (canvasRatio > imgRatio) {
-          drawWidth = canvasWidth;
-          drawHeight = canvasWidth / imgRatio;
-          offsetX = 0;
-          offsetY = (canvasHeight - drawHeight) / 2;
-        } else {
-          drawWidth = canvasHeight * imgRatio;
-          drawHeight = canvasHeight;
-          offsetX = (canvasWidth - drawWidth) / 2;
-          offsetY = 0;
-        }
-
-        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-        lastDrawnFrameRef.current = currentTarget;
-      };
-
       if (force) {
+        if (rafIdRef.current !== null) {
+          cancelAnimationFrame(rafIdRef.current);
+          rafIdRef.current = null;
+        }
         performDraw();
-      } else {
-        rafIdRef.current = requestAnimationFrame(performDraw);
+        return;
       }
+
+      if (rafIdRef.current === null) {
+        rafIdRef.current = requestAnimationFrame(() => {
+          rafIdRef.current = null;
+          performDraw();
+        });
+      }
+    };
+
+    const performDraw = () => {
+      const currentTarget = targetFrameRef.current;
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      // Ensure canvas has physical dimensions
+      if (canvas.width === 0 || canvas.height === 0) {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.round((rect.width || window.innerWidth) * dpr);
+        canvas.height = Math.round((rect.height || window.innerHeight) * dpr);
+      }
+
+      if (currentTarget === lastDrawnFrameRef.current) return;
+
+      const img = findBestFrame(currentTarget);
+      if (!img || img.naturalWidth === 0) return;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      const imgWidth = img.naturalWidth;
+      const imgHeight = img.naturalHeight;
+
+      const canvasRatio = canvasWidth / canvasHeight;
+      const imgRatio = imgWidth / imgHeight;
+
+      let drawWidth, drawHeight, offsetX, offsetY;
+
+      // Object-fit cover algorithm
+      if (canvasRatio > imgRatio) {
+        drawWidth = canvasWidth;
+        drawHeight = canvasWidth / imgRatio;
+        offsetX = 0;
+        offsetY = (canvasHeight - drawHeight) / 2;
+      } else {
+        drawWidth = canvasHeight * imgRatio;
+        drawHeight = canvasHeight;
+        offsetX = (canvasWidth - drawWidth) / 2;
+        offsetY = 0;
+      }
+
+      ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+      lastDrawnFrameRef.current = currentTarget;
     };
 
     // Resize canvas to match container's physical pixel size
