@@ -626,40 +626,52 @@ export default function AdminDashboardPage() {
               <h3 className="font-serif text-sm font-bold text-[#141414]">
                 Customer Retention
               </h3>
-              <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">
-                Healthy
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
+                (stats.repeatCustomerRate || 0) > 0
+                  ? "text-emerald-700 bg-emerald-50"
+                  : "text-neutral-500 bg-neutral-100"
+              }`}>
+                {(stats.repeatCustomerRate || 0) > 0 ? "Healthy" : "Baseline"}
               </span>
             </div>
 
-            {/* Radial Arc Gauge */}
-            <div className="relative flex flex-col items-center justify-center py-2">
-              <svg className="w-44 h-24 overflow-visible" viewBox="0 0 100 55">
-                <path
-                  d="M 10 50 A 40 40 0 0 1 90 50"
-                  fill="none"
-                  stroke="#F3F4F6"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M 10 50 A 40 40 0 0 1 90 50"
-                  fill="none"
-                  stroke="#B51C20"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeDasharray="125.66"
-                  strokeDashoffset={125.66 - (125.66 * (stats.repeatCustomerRate || 0)) / 100}
-                  className="transition-all duration-700 ease-out"
-                />
-              </svg>
+            {/* Radial Arc Gauge with Perfect Centered Fit */}
+            <div className="relative flex flex-col items-center justify-center pt-2 pb-1">
+              <div className="relative w-44 h-26 flex items-center justify-center">
+                <svg className="w-full h-full" viewBox="0 0 120 70">
+                  {/* Background Track Arc */}
+                  <path
+                    d="M 15 60 A 45 45 0 0 1 105 60"
+                    fill="none"
+                    stroke="#F3F4F6"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                  />
+                  {/* Active Progress Arc */}
+                  <path
+                    d="M 15 60 A 45 45 0 0 1 105 60"
+                    fill="none"
+                    stroke="#B51C20"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                    strokeDasharray="141.37"
+                    strokeDashoffset={
+                      141.37 -
+                      (141.37 * Math.min(100, Math.max(0, stats.repeatCustomerRate || 0))) / 100
+                    }
+                    className="transition-all duration-700 ease-out"
+                  />
+                </svg>
 
-              <div className="absolute top-12 flex flex-col items-center">
-                <span className="font-sans text-3xl font-black text-[#141414]">
-                  {stats.repeatCustomerRate || 0}%
-                </span>
-                <span className="text-[10px] text-neutral-400 mt-0.5">
-                  Loyalty diner retention rate
-                </span>
+                {/* Centered Percentage & Label within the Arc */}
+                <div className="absolute inset-x-0 bottom-1 flex flex-col items-center justify-center">
+                  <span className="font-sans text-2xl font-black text-[#141414] leading-tight">
+                    {stats.repeatCustomerRate || 0}%
+                  </span>
+                  <span className="text-[10px] text-neutral-400 font-medium">
+                    Repeat diner rate
+                  </span>
+                </div>
               </div>
             </div>
 
