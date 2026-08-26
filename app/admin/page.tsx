@@ -510,7 +510,7 @@ export default function AdminDashboardPage() {
                   Best Selling Dishes
                 </h3>
                 <p className="text-xs text-neutral-500 mt-0.5">
-                  High margin dishes ranked by sales volume and ratings.
+                  High margin dishes ranked by sales volume and order revenue.
                 </p>
               </div>
               <Link href="/admin/menu">
@@ -520,55 +520,78 @@ export default function AdminDashboardPage() {
               </Link>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left font-sans text-xs">
-                <thead>
-                  <tr className="border-b border-neutral-100 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                    <th className="pb-3 font-semibold">ID</th>
-                    <th className="pb-3 font-semibold">DISH NAME</th>
-                    <th className="pb-3 font-semibold text-center">ORDERS</th>
-                    <th className="pb-3 font-semibold text-center">REVENUE</th>
-                    <th className="pb-3 font-semibold text-right">RATING</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-100">
-                  {bestSelling.map((p: any) => (
-                    <tr key={p.id} className="hover:bg-neutral-50/60 transition-colors">
-                      <td className="py-3.5 font-mono text-neutral-400">{p.id}</td>
-                      <td className="py-3.5">
-                        <div className="flex items-center gap-3">
-                          {p.image && p.image.startsWith("/") ? (
-                            <div className="relative h-8 w-8 rounded-lg overflow-hidden shrink-0 border border-neutral-200">
-                              <Image src={p.image} alt={p.name} fill className="object-cover" />
-                            </div>
-                          ) : (
-                            <div className="h-8 w-8 rounded-lg bg-red-50 text-[#B51C20] flex items-center justify-center shrink-0">
-                              <UtensilsCrossed className="h-4 w-4" />
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-semibold text-neutral-900">{p.name}</p>
-                            <p className="text-[11px] text-neutral-400">{p.category}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3.5 text-center text-neutral-500 font-medium">{p.sold}</td>
-                      <td className="py-3.5 text-center">
-                        <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 font-mono">
-                          {p.revenue}
-                        </span>
-                      </td>
-                      <td className="py-3.5 text-right font-medium text-amber-600">
-                        <span className="inline-flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                          <span>{p.rating}</span>
-                        </span>
-                      </td>
+            {bestSelling.length === 0 ? (
+              <div className="py-10 px-4 text-center space-y-3 bg-neutral-50/50 rounded-xl border border-dashed border-neutral-200">
+                <div className="h-10 w-10 rounded-full bg-neutral-100 text-neutral-400 flex items-center justify-center mx-auto">
+                  <UtensilsCrossed className="h-5 w-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="font-sans text-sm font-bold text-neutral-800">
+                    No dish order telemetry yet
+                  </p>
+                  <p className="font-sans text-xs text-neutral-500 max-w-sm mx-auto">
+                    As customers place orders online or in-store, your top-performing dishes, sales volumes, and revenues will rank here automatically.
+                  </p>
+                </div>
+                <Link href="/menu" target="_blank" className="inline-block pt-1">
+                  <Button variant="outline" size="sm" className="h-8 text-xs font-semibold bg-white shadow-2xs">
+                    View Customer Menu
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left font-sans text-xs">
+                  <thead>
+                    <tr className="border-b border-neutral-100 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                      <th className="pb-3 font-semibold text-center w-12">RANK</th>
+                      <th className="pb-3 font-semibold">DISH NAME</th>
+                      <th className="pb-3 font-semibold text-center">ORDERS</th>
+                      <th className="pb-3 font-semibold text-center">REVENUE</th>
+                      <th className="pb-3 font-semibold text-right">RATING</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-100">
+                    {bestSelling.map((p: any) => (
+                      <tr key={p.id} className="hover:bg-neutral-50/60 transition-colors">
+                        <td className="py-3.5 text-center font-bold font-mono text-neutral-600">
+                          {p.rank || "#1"}
+                        </td>
+                        <td className="py-3.5">
+                          <div className="flex items-center gap-3">
+                            {p.image && p.image.startsWith("/") ? (
+                              <div className="relative h-8 w-8 rounded-lg overflow-hidden shrink-0 border border-neutral-200">
+                                <Image src={p.image} alt={p.name} fill className="object-cover" />
+                              </div>
+                            ) : (
+                              <div className="h-8 w-8 rounded-lg bg-red-50 text-[#B51C20] flex items-center justify-center shrink-0">
+                                <UtensilsCrossed className="h-4 w-4" />
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-semibold text-neutral-900">{p.name}</p>
+                              <p className="text-[11px] text-neutral-400">{p.category}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3.5 text-center text-neutral-500 font-medium">{p.sold}</td>
+                        <td className="py-3.5 text-center">
+                          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 font-mono">
+                            {p.revenue}
+                          </span>
+                        </td>
+                        <td className="py-3.5 text-right font-medium text-amber-600">
+                          <span className="inline-flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            <span>{p.rating}</span>
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
 

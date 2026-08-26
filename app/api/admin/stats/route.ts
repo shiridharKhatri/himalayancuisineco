@@ -135,7 +135,8 @@ export async function GET() {
         .sort((a, b) => b.count - a.count)
         .slice(0, 5)
         .map((d, index) => ({
-          id: `#${(83001 + index).toString()}`,
+          rank: `#${index + 1}`,
+          id: d.item.id,
           name: d.item.name,
           category: d.item.category?.name || "Main Course",
           sold: `${d.count} ordered`,
@@ -144,18 +145,6 @@ export async function GET() {
           rating: (d.item.isPopular ? "4.9" : "4.8"),
           image: d.item.image,
         }));
-    } else if (menuItems.length > 0) {
-      // If no orders placed yet, list real menu dishes with 0 orders
-      bestSelling = menuItems.slice(0, 5).map((item, index) => ({
-        id: `#${(83001 + index).toString()}`,
-        name: item.name,
-        category: item.category?.name || "Main Course",
-        sold: "0 ordered",
-        revenue: "$0.00",
-        rawRevenue: 0,
-        rating: item.isPopular ? "4.9" : "4.7",
-        image: item.image,
-      }));
     }
 
     return NextResponse.json({
