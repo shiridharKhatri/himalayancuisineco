@@ -20,6 +20,7 @@ import {
   X,
   Settings,
   Flame,
+  Users,
 } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -71,6 +72,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "Catering", href: "/admin/catering", icon: Wine },
     { label: "Gift Cards", href: "/admin/gift-cards", icon: Gift },
     { label: "Careers & Hiring", href: "/admin/careers", icon: Briefcase },
+    { label: "Users & Staff", href: "/admin/users", icon: Users },
   ];
 
   const systemNavItems = [

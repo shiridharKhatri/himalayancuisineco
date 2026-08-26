@@ -11,11 +11,34 @@ const providers: any[] = [
       password: { label: "Password", type: "password" }
     },
     async authorize(credentials) {
-      // Admin credentials validation
+      if (!credentials?.email) return null;
+      const email = credentials.email.toLowerCase().trim();
+      const password = credentials.password || "";
+
+      // 1. Check SQLite database for dynamic admins, managers, and staff
+      try {
+        const { prisma } = await import("@/lib/prisma");
+        const dbUser = await prisma.user.findUnique({
+          where: { email },
+        });
+
+        if (dbUser && dbUser.password === password) {
+          return {
+            id: dbUser.id,
+            name: dbUser.name || "Himalayan Staff",
+            email: dbUser.email,
+            role: dbUser.role || "STAFF",
+          };
+        }
+      } catch (e) {
+        console.error("DB Auth check fallback:", e);
+      }
+
+      // 2. Primary fallback admin credentials validation
       if (
-        (credentials?.email === "admin@himalayan.com" && credentials?.password === "adminpassword") ||
-        (credentials?.email === "admin@himalayancuisineco.com" && credentials?.password === "admin123") ||
-        (credentials?.email === "admin@himalayancuisineco.com" && credentials?.password === "adminpassword")
+        (email === "admin@himalayan.com" && password === "adminpassword") ||
+        (email === "admin@himalayancuisineco.com" && password === "admin123") ||
+        (email === "admin@himalayancuisineco.com" && password === "adminpassword")
       ) {
         return {
           id: "u-admin",
