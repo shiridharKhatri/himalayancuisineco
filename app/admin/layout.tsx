@@ -18,20 +18,8 @@ import {
   ExternalLink,
   Menu,
   X,
-  Bell,
-  Search,
   Settings,
-  HelpCircle,
   Flame,
-  Sun,
-  Moon,
-  ChevronDown,
-  Sparkles,
-  TrendingUp,
-  FileText,
-  CreditCard,
-  Layers,
-  ChevronRight,
 } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -39,8 +27,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const { data: session } = useSession();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false);
-  const [isDarkMode, setIsDarkMode] = React.useState(false);
-  const [globalSearch, setGlobalSearch] = React.useState("");
 
   const mainNavItems = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -321,55 +307,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* MAIN ADMIN CONTENT AREA */}
       <main className="flex-1 flex flex-col min-w-0 bg-[#F8F9FA] overflow-y-auto min-h-screen">
-        {/* Top bar header (Matching Shopeers Top Search & Notification Bar) */}
-        <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-neutral-200/80 px-6 py-3 flex items-center justify-between gap-4">
-          {/* Search Bar with ⌘K Badge */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="h-4 w-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
-            <input
-              type="text"
-              value={globalSearch}
-              onChange={(e) => setGlobalSearch(e.target.value)}
-              placeholder="Search anything..."
-              className="w-full h-9 pl-9 pr-12 rounded-xl border border-neutral-200 bg-neutral-50 text-xs text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#B51C20] focus:border-[#B51C20] transition-all"
-            />
-            <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded text-[10px] font-mono text-neutral-400 bg-white border border-neutral-200 shadow-2xs pointer-events-none">
-              ⌘K
-            </kbd>
-          </div>
-
-          {/* Right Action Icons & Profile */}
-          <div className="flex items-center gap-3">
-            {/* Theme Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className="h-8 w-8 rounded-xl border border-neutral-200 bg-white flex items-center justify-center text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50 transition-colors cursor-pointer"
-              title="Toggle Theme"
-            >
-              {isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-            </button>
-
-            {/* Notification Bell with Badge */}
-            <button
-              type="button"
-              className="relative h-8 w-8 rounded-xl border border-neutral-200 bg-white flex items-center justify-center text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50 transition-colors cursor-pointer"
-              title="Notifications"
-            >
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#B51C20] ring-2 ring-white" />
-            </button>
-
-            {/* Admin Profile Dropdown Avatar */}
-            <div className="flex items-center gap-2 pl-2 border-l border-neutral-200">
-              <div className="relative h-8 w-8 rounded-full bg-[#B51C20] text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                <span>TS</span>
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
-              </div>
-            </div>
-          </div>
-        </header>
-
         {/* Dynamic Page Content */}
         <div className="p-6 md:p-8 flex-1 max-w-[1600px] w-full mx-auto">{children}</div>
       </main>
