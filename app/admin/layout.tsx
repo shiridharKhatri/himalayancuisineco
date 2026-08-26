@@ -13,110 +13,222 @@ import {
   Wine,
   Gift,
   Briefcase,
+  MapPin,
   LogOut,
   ExternalLink,
   Menu,
   X,
   Bell,
   Search,
-  MapPin,
-  ShieldCheck,
+  Settings,
+  HelpCircle,
+  Sun,
+  Moon,
+  ChevronDown,
+  Sparkles,
+  TrendingUp,
+  FileText,
+  CreditCard,
+  Layers,
+  ChevronRight,
 } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = React.useState(false);
+  const [isDarkMode, setIsDarkMode] = React.useState(false);
+  const [globalSearch, setGlobalSearch] = React.useState("");
 
-  const navItems = [
+  const mainNavItems = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { label: "Menu Items", href: "/admin/menu", icon: UtensilsCrossed },
-    { label: "Live Orders", href: "/admin/orders", icon: ShoppingBag },
+    { label: "Orders", href: "/admin/orders", icon: ShoppingBag, badge: "46" },
+    { label: "Products / Menu", href: "/admin/menu", icon: UtensilsCrossed },
     { label: "Delivery Zone", href: "/admin/delivery", icon: MapPin },
     { label: "Reservations", href: "/admin/reservations", icon: CalendarDays },
+  ];
+
+  const secondaryNavItems = [
     { label: "Catering", href: "/admin/catering", icon: Wine },
     { label: "Gift Cards", href: "/admin/gift-cards", icon: Gift },
     { label: "Job Applicants", href: "/admin/careers", icon: Briefcase },
   ];
 
+  const systemNavItems = [
+    { label: "Settings", href: "/admin/delivery", icon: Settings },
+    { label: "Live Website", href: "/", icon: ExternalLink, external: true },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#F4F3EE] text-[#1E1E1E] flex flex-col md:flex-row antialiased font-sans selection:bg-[#B51C20] selection:text-white">
+    <div className="min-h-screen bg-[#F8F9FA] text-[#1E1E1E] flex flex-col md:flex-row antialiased font-sans selection:bg-[#B51C20] selection:text-white">
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 bg-[#141414] text-[#E0E0E0] border-r border-[#262626] shrink-0 sticky top-0 h-screen z-30 justify-between">
-        <div className="flex flex-col flex-1 overflow-y-auto">
-          {/* Admin Header / Brand */}
-          <div className="p-5 border-b border-[#262626] flex items-center justify-between">
+      <aside className="hidden md:flex flex-col w-64 bg-white text-[#4A4A4A] border-r border-[#EBEBEB] shrink-0 sticky top-0 h-screen z-30 justify-between">
+        <div className="flex flex-col flex-1 overflow-y-auto px-4 py-5">
+          {/* Brand Header */}
+          <div className="flex items-center justify-between px-2 mb-6">
             <Link href="/admin" className="flex items-center gap-3">
-              <div className="relative h-9 w-9 rounded-xl bg-[#B51C20] p-1.5 flex items-center justify-center shadow-md">
+              <div className="relative h-9 w-9 rounded-xl bg-[#B51C20] p-1.5 flex items-center justify-center shadow-xs">
                 <Image src="/images/logo.png" alt="Admin Logo" fill className="object-contain invert" />
               </div>
-              <div>
-                <span className="font-serif font-bold text-sm text-white tracking-wide block">
-                  HIMALAYAN
+              <div className="flex items-center gap-1.5">
+                <span className="font-serif font-bold text-base text-[#141414] tracking-tight">
+                  Himalayan
                 </span>
-                <span className="text-[10px] uppercase font-mono tracking-widest text-[#B51C20] font-bold block">
-                  Control Panel
-                </span>
+                <span className="h-1.5 w-1.5 rounded-full bg-[#B51C20]" />
               </div>
             </Link>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="p-3 space-y-1 mt-3">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all duration-200 ${
-                    isActive
-                      ? "bg-[#B51C20] text-white font-semibold shadow-sm"
-                      : "text-[#A0A0A0] hover:text-white hover:bg-[#1E1E1E]"
-                  }`}
-                >
-                  <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-white" : "text-[#A0A0A0]"}`} />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+          {/* Main Navigation Section */}
+          <div className="space-y-6">
+            <div>
+              <div className="px-2 mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 font-mono">
+                  Main
+                </span>
+              </div>
+              <nav className="space-y-1">
+                {mainNavItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 ${
+                        isActive
+                          ? "bg-[#FDF2F2] text-[#B51C20] font-bold shadow-xs"
+                          : "text-neutral-600 hover:text-[#141414] hover:bg-neutral-100/70"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#B51C20]" : "text-neutral-500"}`} />
+                        <span>{item.label}</span>
+                      </div>
+                      {item.badge && (
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          isActive
+                            ? "bg-[#B51C20] text-white"
+                            : "bg-emerald-100 text-emerald-700"
+                        }`}>
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Operations Section */}
+            <div>
+              <div className="px-2 mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 font-mono">
+                  Operations &amp; Events
+                </span>
+              </div>
+              <nav className="space-y-1">
+                {secondaryNavItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 ${
+                        isActive
+                          ? "bg-[#FDF2F2] text-[#B51C20] font-bold shadow-xs"
+                          : "text-neutral-600 hover:text-[#141414] hover:bg-neutral-100/70"
+                      }`}
+                    >
+                      <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#B51C20]" : "text-neutral-500"}`} />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* System / General Section */}
+            <div>
+              <div className="px-2 mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 font-mono">
+                  System
+                </span>
+              </div>
+              <nav className="space-y-1">
+                {systemNavItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      target={item.external ? "_blank" : undefined}
+                      className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 ${
+                        isActive
+                          ? "bg-[#FDF2F2] text-[#B51C20] font-bold shadow-xs"
+                          : "text-neutral-600 hover:text-[#141414] hover:bg-neutral-100/70"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#B51C20]" : "text-neutral-500"}`} />
+                        <span>{item.label}</span>
+                      </div>
+                      {item.external && (
+                        <span className="text-[9px] uppercase px-1.5 py-0.5 bg-neutral-100 text-neutral-500 rounded font-mono font-semibold">
+                          Live
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          </div>
         </div>
 
-        {/* Sidebar Footer */}
-        <div className="p-4 border-t border-[#262626] space-y-3 bg-[#0F0F0F]">
-          <Link
-            href="/"
-            target="_blank"
-            className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#1E1E1E] text-xs font-medium text-[#C0C0C0] hover:text-white hover:bg-[#282828] transition-colors"
-          >
-            <span className="flex items-center gap-2">
-              <ExternalLink className="h-3.5 w-3.5 text-[#B51C20]" />
-              <span>Live Website</span>
-            </span>
-            <span className="text-[9px] uppercase px-1.5 py-0.5 bg-[#B51C20]/20 text-[#B51C20] rounded font-mono font-bold">
-              PUBLIC
-            </span>
-          </Link>
+        {/* Promo / Live Kitchen Status Card (Matching Screenshot Bottom Card) */}
+        <div className="p-4 border-t border-neutral-100 space-y-3">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#B51C20] via-[#9B181B] to-[#6A0E10] p-4 text-white shadow-md">
+            <div className="relative z-10 space-y-2">
+              <div className="h-7 w-7 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center">
+                <Sparkles className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <h4 className="font-sans font-bold text-xs">Live Kitchen System</h4>
+                <p className="text-[11px] text-white/80 mt-0.5 leading-snug">
+                  Active orders sync directly with kitchen prep queue.
+                </p>
+              </div>
+              <Link href="/admin/orders" className="block">
+                <button
+                  type="button"
+                  className="w-full py-1.5 px-3 rounded-xl bg-white text-[#B51C20] font-sans font-bold text-xs hover:bg-white/90 transition-colors shadow-xs cursor-pointer"
+                >
+                  View Kitchen Queue
+                </button>
+              </Link>
+            </div>
+          </div>
 
-          <div className="flex items-center justify-between pt-1">
+          {/* Admin User Strip */}
+          <div className="flex items-center justify-between pt-1 px-1">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="h-8 w-8 rounded-full bg-[#262626] border border-[#3A3A3A] flex items-center justify-center font-bold text-xs text-white">
+              <div className="h-8 w-8 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center font-bold text-xs text-[#B51C20]">
                 TS
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-white truncate">Tashi Sherpa</p>
-                <p className="text-[10px] text-[#888888] font-mono">Master Admin</p>
+                <p className="text-xs font-bold text-neutral-800 truncate">Tashi Sherpa</p>
+                <p className="text-[10px] text-neutral-400 font-mono">Master Admin</p>
               </div>
             </div>
 
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/sign-in" })}
-              className="p-1.5 rounded-lg text-[#888888] hover:text-[#B51C20] hover:bg-[#1E1E1E] transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-[#B51C20] hover:bg-red-50 transition-colors cursor-pointer"
               title="Sign Out"
             >
               <LogOut className="h-4 w-4" />
@@ -126,18 +238,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* MOBILE TOPBAR & DRAWER */}
-      <div className="md:hidden sticky top-0 z-40 bg-[#141414] text-white border-b border-[#262626] px-4 py-3 flex items-center justify-between">
+      <div className="md:hidden sticky top-0 z-40 bg-white text-[#141414] border-b border-neutral-200 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="relative h-7 w-7 rounded-lg bg-[#B51C20] p-1 flex items-center justify-center">
             <Image src="/images/logo.png" alt="Logo" fill className="object-contain invert" />
           </div>
-          <span className="font-serif text-xs font-bold tracking-wide">Admin Panel</span>
+          <span className="font-serif text-sm font-bold tracking-wide">Himalayan Admin</span>
         </div>
 
         <div className="flex items-center gap-2">
           <Link
             href="/"
-            className="p-1.5 rounded-lg bg-[#1E1E1E] text-xs text-[#A0A0A0] hover:text-white"
+            className="p-1.5 rounded-lg bg-neutral-100 text-xs text-neutral-600 hover:text-black"
             title="Live Site"
           >
             <ExternalLink className="h-4 w-4" />
@@ -145,7 +257,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <button
             type="button"
             onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-            className="p-1.5 rounded-lg bg-[#1E1E1E] text-white"
+            className="p-1.5 rounded-lg bg-neutral-100 text-[#141414]"
           >
             {isMobileSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -154,60 +266,96 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* MOBILE NAVIGATION MENU */}
       {isMobileSidebarOpen && (
-        <div className="md:hidden fixed inset-x-0 top-[53px] bottom-0 bg-[#141414] z-40 p-4 overflow-y-auto space-y-1">
-          {navItems.map((item) => {
+        <div className="md:hidden fixed inset-x-0 top-[53px] bottom-0 bg-white z-40 p-4 overflow-y-auto space-y-1">
+          {[...mainNavItems, ...secondaryNavItems, ...systemNavItems].map((item: any) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
               <Link
-                key={item.href}
+                key={item.label}
                 href={item.href}
                 onClick={() => setIsMobileSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm ${
-                  isActive ? "bg-[#B51C20] text-white font-bold" : "text-[#A0A0A0] hover:bg-[#1E1E1E]"
+                className={`flex items-center justify-between px-4 py-3 rounded-xl font-medium text-sm ${
+                  isActive ? "bg-[#FDF2F2] text-[#B51C20] font-bold" : "text-neutral-600 hover:bg-neutral-100"
                 }`}
               >
-                <Icon className="h-4 w-4" />
-                <span>{item.label}</span>
+                <div className="flex items-center gap-3">
+                  <Icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </div>
+                {item.badge && (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#B51C20] text-white">
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             );
           })}
-          <div className="pt-4 border-t border-[#262626] mt-4">
+          <div className="pt-4 border-t border-neutral-200 mt-4">
             <button
               onClick={() => signOut({ callbackUrl: "/sign-in" })}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#262626] text-sm font-semibold text-[#B51C20]"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-50 text-sm font-semibold text-[#B51C20]"
             >
               <LogOut className="h-4 w-4" />
-              <span>Sign Out of Admin</span>
+              <span>Sign Out</span>
             </button>
           </div>
         </div>
       )}
 
-      {/* MAIN ADMIN CONTENT AREA (No public header/footer) */}
-      <main className="flex-1 flex flex-col min-w-0 bg-[#F4F3EE] overflow-y-auto min-h-screen">
-        {/* Top bar header */}
-        <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-neutral-200/80 px-6 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="font-serif text-lg font-bold text-[#141414]">
-              {navItems.find((n) => n.href === pathname)?.label || "Administration"}
-            </span>
-            <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
-              Database Live
-            </span>
+      {/* MAIN ADMIN CONTENT AREA */}
+      <main className="flex-1 flex flex-col min-w-0 bg-[#F8F9FA] overflow-y-auto min-h-screen">
+        {/* Top bar header (Matching Shopeers Top Search & Notification Bar) */}
+        <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-neutral-200/80 px-6 py-3 flex items-center justify-between gap-4">
+          {/* Search Bar with ⌘K Badge */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="h-4 w-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <input
+              type="text"
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+              placeholder="Search anything..."
+              className="w-full h-9 pl-9 pr-12 rounded-xl border border-neutral-200 bg-neutral-50 text-xs text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#B51C20] focus:border-[#B51C20] transition-all"
+            />
+            <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded text-[10px] font-mono text-neutral-400 bg-white border border-neutral-200 shadow-2xs pointer-events-none">
+              ⌘K
+            </kbd>
           </div>
 
+          {/* Right Action Icons & Profile */}
           <div className="flex items-center gap-3">
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#F4F3EE] border border-neutral-200 text-xs text-neutral-500">
-              <ShieldCheck className="h-4 w-4 text-[#B51C20]" />
-              <span className="font-mono">admin@himalayancuisineco.com</span>
+            {/* Theme Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="h-8 w-8 rounded-xl border border-neutral-200 bg-white flex items-center justify-center text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50 transition-colors cursor-pointer"
+              title="Toggle Theme"
+            >
+              {isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+            </button>
+
+            {/* Notification Bell with Badge */}
+            <button
+              type="button"
+              className="relative h-8 w-8 rounded-xl border border-neutral-200 bg-white flex items-center justify-center text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50 transition-colors cursor-pointer"
+              title="Notifications"
+            >
+              <Bell className="h-4 w-4" />
+              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#B51C20] ring-2 ring-white" />
+            </button>
+
+            {/* Admin Profile Dropdown Avatar */}
+            <div className="flex items-center gap-2 pl-2 border-l border-neutral-200">
+              <div className="relative h-8 w-8 rounded-full bg-[#B51C20] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                <span>TS</span>
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+              </div>
             </div>
           </div>
         </header>
 
         {/* Dynamic Page Content */}
-        <div className="p-6 md:p-8 flex-1 max-w-[1500px] w-full mx-auto">{children}</div>
+        <div className="p-6 md:p-8 flex-1 max-w-[1600px] w-full mx-auto">{children}</div>
       </main>
     </div>
   );
